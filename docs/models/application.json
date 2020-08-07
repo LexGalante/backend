@@ -1,0 +1,33 @@
+{
+	"real_name": "Application Example",
+	"name": "application_example",
+	"type": "web",
+	"description": "Portal for premium customers",
+	"detail": "",
+	"owners": ["bussiness"],
+	"maintainers": ["admin@admin.com.br"],
+	"tags": ["ASP .Net Core", "Entity Framework"],
+	"roled_by": "default",
+	"active": true,
+	"created_at": { "$date": "2020-08-01 22:26:12.111Z" },
+	"created_by": "admin",
+	"updated_at": { "$date": "2020-08-01 22:26:12.111Z" },
+	"updated_by": "admin",
+	"features":[
+		"application_example_report_1",		
+		"application_example_report_2",				
+		"application_example_report_3",
+		"application_example_report_4",
+		"application_example_report_5",
+		"application_example_report_6",
+		"application_example_report_7",
+		"application_example_report_8"
+	],
+	"enable_features":[
+		"application_example_report_1",		
+		"application_example_report_2",				
+		"application_example_report_3",
+		"application_example_report_4",
+		"application_example_report_5"		
+	]
+}
