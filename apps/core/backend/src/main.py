@@ -5,8 +5,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
+from .resources.async_database import close_database, connect_database
 from .resources.configuration import get_configuration
-from .resources.database import close_database, connect_database
 from .resources.http_handler import http_error_handler
 from .v1 import api as api_v1
 
@@ -29,7 +29,7 @@ app.add_middleware(
 # inject https-redirect
 if config.ENABLE_HTTPS_REDIRECT:
     app.add_middleware(HTTPSRedirectMiddleware)
-# inject mongo context
+# inject mongo context async
 app.add_event_handler("startup", connect_database)
 app.add_event_handler("shutdown", close_database)
 # inject error handler

@@ -14,6 +14,7 @@ uvicorn = "*"
 fastapi-versioning = "*"
 python-dotenv = "*"
 motor = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.7"
