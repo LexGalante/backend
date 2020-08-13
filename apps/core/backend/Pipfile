@@ -7,14 +7,13 @@ verify_ssl = true
 autopep8 = "*"
 flake8 = "*"
 isort = "*"
+sqlalchemy-stubs = "*"
 
 [packages]
 fastapi = "*"
 uvicorn = "*"
-fastapi-versioning = "*"
 python-dotenv = "*"
-motor = "*"
-pymongo = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"

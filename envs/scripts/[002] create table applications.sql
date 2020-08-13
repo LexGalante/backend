@@ -1,6 +1,7 @@
 CREATE TABLE applications (
 	id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
-	"name" varchar(250) NOT NULL,
+	"name" varchar(30) NOT NULL,
+    real_name varchar(250) NOT NULL,
 	"type" smallint NOT NULL,
 	description varchar(250) NOT NULL,
 	details text NULL,
