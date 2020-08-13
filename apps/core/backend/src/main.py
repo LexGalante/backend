@@ -1,23 +1,17 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
-from .resources.async_database import close_database, connect_database
-from .resources.configuration import get_configuration
-from .resources.http_handler import http_error_handler
-from .v1 import api as api_v1
+from .api.v1 import api as api_v1
 
 # load configurations
 load_dotenv()
-config = get_configuration()
 # prepare application
-app = FastAPI(title=config.PROJECT_NAME)
+app = FastAPI()
 # inject custom error
-if config.ENABLE_CUSTOM_ERROR:
-    app.add_middleware(ServerErrorMiddleware)
+app.add_middleware(ServerErrorMiddleware)
 # inject cors
 app.add_middleware(
     CORSMiddleware,
@@ -27,12 +21,6 @@ app.add_middleware(
     allow_headers=["*"]
 )
 # inject https-redirect
-if config.ENABLE_HTTPS_REDIRECT:
-    app.add_middleware(HTTPSRedirectMiddleware)
-# inject mongo context async
-app.add_event_handler("startup", connect_database)
-app.add_event_handler("shutdown", close_database)
-# inject error handler
-app.add_exception_handler(HTTPException, http_error_handler)
+app.add_middleware(HTTPSRedirectMiddleware)
 # prepare versioning api
 app.mount("/v1", api_v1.subapp)
