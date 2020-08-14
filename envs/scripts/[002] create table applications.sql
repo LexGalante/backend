@@ -12,9 +12,9 @@ CREATE TABLE applications (
 	active bool NULL DEFAULT TRUE,
 	CONSTRAINT applications_pk PRIMARY KEY (id),
 	CONSTRAINT applications_check CHECK ((type IN(1, 2, 3)))
-);
+)
 
-CREATE INDEX applications_active_idx ON applications (active);
+CREATE INDEX applications_active_idx ON applications (active)
 
 ALTER TABLE applications
     ADD CONSTRAINT aplications_created_by_fk FOREIGN KEY(created_by) REFERENCES users(id)
