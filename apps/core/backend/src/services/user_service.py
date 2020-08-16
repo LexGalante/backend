@@ -6,8 +6,8 @@ from resources.dbcontext import DbContext
 
 
 class UserService():
-    def __init__(self, repository: UserRepository):
-        self._repository = repository
+    def __init__(self, dbcontext: DbContext):
+        self._repository = UserRepository(dbcontext)
 
     def get_all(self, page: int, page_size: int) -> List[User]:
         return self._repository.get_all(page, page_size)

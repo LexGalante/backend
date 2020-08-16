@@ -4,18 +4,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from .logger import Logger
+from resources.config import config
 
 
 class DbContext():
-    connection_string: str = getenv("CONNECTION_STRING")
     engine = None
     session: Session = None
 
     def factory_engine(self):
-        self.engine = create_engine(self.connection_string, pool_pre_ping=True)
+        self.engine = create_engine(config.CONNECTION_STRING, pool_pre_ping=True)
 
     def start(self):
-        if self.session is not None:
+        if self.session is None:
             self.factory_engine()
             self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
