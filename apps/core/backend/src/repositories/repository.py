@@ -1,4 +1,4 @@
-from ..resources.dbcontext import DbContext
+from resources.dbcontext import DbContext
 
 
 class Repository():

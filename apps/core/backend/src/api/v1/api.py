@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 
-from .routes import index
+from .routes import user_router
 
-subapp: FastAPI = FastAPI()
-
-subapp.include_router(router=index.router, prefix="/index", tags=["index"])
+prefix = "/v1"
+router: APIRouter = APIRouter()
+router.include_router(router=user_router.router, prefix="/users", tags=["users"])
