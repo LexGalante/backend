@@ -12,7 +12,7 @@ class DbContext():
     session: Session = None
 
     def factory_engine(self):
-        self.engine = create_engine(config.CONNECTION_STRING, pool_pre_ping=True)
+        self.engine = create_engine(config.get_connection_string(), pool_pre_ping=True)
 
     def start(self):
         if self.session is None:
