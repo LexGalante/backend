@@ -1,26 +1,10 @@
 from os import getenv
 
-from pydantic import PostgresDsn
 
+API_ENABLE_HTTPS_REDIRECT: bool = False
+API_ENABLE_CORS: bool = bool(getenv("API_ENABLE_CORS"))
 
-class Config():
-    API_ENABLE_HTTPS_REDIRECT: bool = False
-    API_ENABLE_CORS: bool = bool(getenv("API_ENABLE_CORS"))
-    API_SECRET: str = getenv("API_SECRET", "Iggl3Secret@")
+API_SECRET: str = getenv("API_SECRET", "Iggl3Secret@")
+API_MINUTES_EXPIRE_TOKEN: int = int(getenv("API_MINUTES_EXPIRE_TOKEN", 30))
 
-    POSTGRES_DATABASE = getenv("POSTGRES_DATABASE", "postgres")
-    POSTGRES_USER = getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD = getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_SERVER = getenv("POSTGRES_SERVER", "postgres")
-
-    def get_connection_string(self):
-        return PostgresDsn.build(
-            scheme=self.POSTGRES_DATABASE,
-            user=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
-            path=f"{self.POSTGRES_DATABASE}"
-        )
-
-
-config = Config
+CONNECTION_STRING: str = getenv("CONNECTION_STRING", "postgresql+psycopg2://postgres:postgres@localhost/postgres")

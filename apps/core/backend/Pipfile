@@ -16,6 +16,8 @@ python-dotenv = "*"
 sqlalchemy = "*"
 bcrypt = "*"
 psycopg2-binary = "*"
+python-jose = "*"
+passlib = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Optional
 
 from fastapi import APIRouter, Depends
 
@@ -11,23 +11,23 @@ from models.user import User
 router = APIRouter()
 
 
-@router.get("/paginate", response_model=List[UserGetSchema])
+@router.get("/paginate/{page}/{page_size}", response_model=List[UserGetSchema])
 def index(
     dbcontext: DbContext = Depends(get_dbcontext),
-    page: int = 1,
-    page_size: int = 10
+    page: Optional[int] = 1,
+    page_size: Optional[int] = 10
 ) -> List[UserGetSchema]:
     users: List[User] = UserService(dbcontext).get_all(page, page_size)
 
-    return [UserGetSchema(**user) for user in users]
+    return [UserGetSchema.from_orm(user) for user in users]
 
 
-@router.get("/", response_model=List[UserGetSchema])
+@router.get("/{email}", response_model=UserGetSchema)
 def get(
     dbcontext: DbContext = Depends(get_dbcontext),
     email: str = None
 ) -> UserGetSchema:
     user: User = UserService(dbcontext).get_by_email(email)
 
-    return UserGetSchema(**user)
+    return UserGetSchema.from_orm(user)
 

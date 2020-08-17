@@ -32,6 +32,10 @@ class ApplicationEnviroment(ApplicationBase):
     real_name = Column(String(250), nullable=False)
     description = Column(String(250), nullable=False)
     application = relationship("Application", lazy="select", back_populates="enviroments")
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"))
+    updated_at = Column(DateTime(timezone=True), nullable=False)
+    updated_by = Column(Integer, ForeignKey("users.id"))
 
 
 class ApplicationFeature(ApplicationBase):
@@ -42,3 +46,7 @@ class ApplicationFeature(ApplicationBase):
     name = Column(String(250), nullable=False)
     enable = Column(Boolean, nullable=False, default=False)
     application = relationship("Application", lazy="select", back_populates="features")
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"))
+    updated_at = Column(DateTime(timezone=True), nullable=False)
+    updated_by = Column(Integer, ForeignKey("users.id"))

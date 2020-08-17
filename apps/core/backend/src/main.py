@@ -6,7 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
-from resources.config import config
+from resources.config import API_ENABLE_CORS, API_ENABLE_HTTPS_REDIRECT
 from api.v1 import api as api_v1
 
 # load configurations
@@ -16,7 +16,7 @@ app = FastAPI()
 # inject custom error
 app.add_middleware(ServerErrorMiddleware)
 # inject cors
-if config.API_ENABLE_CORS:
+if API_ENABLE_CORS:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -25,7 +25,7 @@ if config.API_ENABLE_CORS:
         allow_headers=["*"]
     )
 # enable https redirect
-if config.API_ENABLE_HTTPS_REDIRECT:
+if API_ENABLE_HTTPS_REDIRECT:
     app.add_middleware(HTTPSRedirectMiddleware)
 # inject routers
 app.include_router(api_v1.router, prefix=api_v1.prefix)

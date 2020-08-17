@@ -1,10 +1,8 @@
-from os import getenv
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from .logger import Logger
-from resources.config import config
+from resources.config import CONNECTION_STRING
 
 
 class DbContext():
@@ -12,12 +10,13 @@ class DbContext():
     session: Session = None
 
     def factory_engine(self):
-        self.engine = create_engine(config.get_connection_string(), pool_pre_ping=True)
+        self.engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
 
     def start(self):
         if self.session is None:
             self.factory_engine()
-            self.session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            self.session = SessionLocal()
 
     def finish(self):
         if self.session is not None:

@@ -11,13 +11,13 @@ class UserRepository(Repository):
         super().__init__(db)
 
     def get_all(self, page: int, page_size: int) -> List[User]:
-        return self._db.session.query(User).all().limit((page - 1) * page_size).offset(page_size)
+        return self._db.session.query(User).offset((page - 1) * page_size).limit(page_size).all()
 
     def get_by_id(self, id: int) -> User:
-        return self._db.session.query(User).filter(User.id == id).first()
+        return self._db.session.query(User).filter(id == id).first()
 
     def get_by_email(self, email: str) -> User:
-        return self._db.session.query(User).filter(User.email == email).first()
+        return self._db.session.query(User).filter(email == email).first()
 
     def create(self, user: User):
         self._db.session.add(user)
