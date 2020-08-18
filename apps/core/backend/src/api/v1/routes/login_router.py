@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from api.v1.dependency_injection import get_dbcontext
 from api.v1.schemas.auth_schema import AuthRequestSchema, AuthResponseSchema
 from resources.dbcontext import DbContext
-from services.auth_service import Authervice
+from services.auth_service import AuthService
 
 
 router = APIRouter()
@@ -12,7 +12,7 @@ router = APIRouter()
 @router.post("/", status_code=status.HTTP_200_OK, response_model=AuthResponseSchema)
 def index(dbcontext: DbContext = Depends(get_dbcontext), schema: AuthRequestSchema = None):
     try:
-        token: str = Authervice(dbcontext).authenticate(schema.username, schema.password)
+        token: str = AuthService(dbcontext).authenticate(schema.username, schema.password)
 
         return AuthResponseSchema(token_type="Bearer", access_token=token)
     except ValueError as e:

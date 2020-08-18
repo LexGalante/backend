@@ -4,7 +4,7 @@ from resources.dbcontext import DbContext
 from resources.security import validate, encode_token_jwt
 
 
-class Authervice():
+class AuthService():
     def __init__(self, dbcontext: DbContext):
         self._dbcontext: DbContext = dbcontext
         self._repository: UserRepository = UserRepository(dbcontext)
