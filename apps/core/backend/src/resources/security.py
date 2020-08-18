@@ -7,21 +7,25 @@ from jose import jwt
 from .config import API_MINUTES_EXPIRE_TOKEN, API_SECRET
 
 
-def genarate_jwt(subject: Union[str, Any], expires_delta: timedelta = None) -> str:
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=API_MINUTES_EXPIRE_TOKEN
-        )
+def encode_token_jwt(subject: Union[str, Any]) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=API_MINUTES_EXPIRE_TOKEN)
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, API_SECRET, algorithm="HS256")
 
     return encoded_jwt
 
 
+def decode_token_jwt(token: str) -> dict:
+    decode = jwt.decode(token, API_SECRET, algorithms="HS256")
+
+    return decode
+
+
 def encrypt(text: str) -> str:
-    return hashpw(text.encode('utf-8'), gensalt(12))
+    to_crypt = bytes(text, 'utf-8')
+    password = hashpw(to_crypt, gensalt())
+
+    return password.decode('utf-8')
 
 
 def validate(original: str, comparer: str) -> bool:

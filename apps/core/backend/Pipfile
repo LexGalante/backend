@@ -18,6 +18,7 @@ psycopg2-binary = "*"
 pydantic = {extras = ["email"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "*"}
+python-multipart = "*"
 
 [requires]
 python_version = "3.7"

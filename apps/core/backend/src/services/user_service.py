@@ -3,7 +3,7 @@ from typing import List
 from models.user import User
 from repositories.user_repository import UserRepository
 from resources.dbcontext import DbContext
-from resources.security import encrypt
+from resources.security import encrypt, validate
 
 
 class UserService():
@@ -23,5 +23,18 @@ class UserService():
         user.active = True
         self._repository.create(user)
         self._dbcontext.commit()
+
+        return user
+
+    def update(self, data) -> User:
+        pass
+
+    def delete(self, data):
+        pass
+
+    def authenticate(self, email, password) -> User:
+        user = self._repository.get_by_email(email)
+        if user is None or not validate(password, user.password):
+            raise ValueError("Invalid username or password")
 
         return user

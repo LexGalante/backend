@@ -3,15 +3,15 @@ import logging
 
 class Logger():
     @staticmethod
-    def info(self, message: str):
+    def info(message: str):
         logging.info(message)
 
     @staticmethod
-    def warning(self, message: str):
+    def warning(message: str):
         logging.warning(message)
 
     @staticmethod
-    def error(self, message: str):
+    def error(message: str):
         logging.error(message)
 
 

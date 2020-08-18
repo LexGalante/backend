@@ -18,9 +18,8 @@ class RegisterRequestSchema(BaseModel):
     @validator("password")
     def password_validator(cls, value):
         if not re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', value):
-            raise ValueError("""
-                Password must contain the following rules: uppercase and lowercase letters, at least 8 characters
-            """)
+            raise ValueError(
+                "Password must contain the following rules: uppercase and lowercase letters, at least 8 characters")
 
         return value
 
