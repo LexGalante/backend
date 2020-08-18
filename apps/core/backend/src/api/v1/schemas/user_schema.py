@@ -1,9 +1,7 @@
-from typing import List
-
 from pydantic import BaseModel
 
 
-class UserGetSchema(BaseModel):
+class UserResponseSchema(BaseModel):
     email: str
     active: bool
 

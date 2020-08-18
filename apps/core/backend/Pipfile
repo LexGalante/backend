@@ -4,7 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-autopep8 = "*"
 flake8 = "*"
 isort = "*"
 sqlalchemy-stubs = "*"
@@ -16,8 +15,9 @@ python-dotenv = "*"
 sqlalchemy = "*"
 bcrypt = "*"
 psycopg2-binary = "*"
-python-jose = "*"
-passlib = "*"
+pydantic = {extras = ["email"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
 
 [requires]
 python_version = "3.7"

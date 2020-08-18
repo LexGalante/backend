@@ -1,5 +1,7 @@
 from typing import List
 
+from sqlalchemy.exc import IntegrityError
+
 from .repository import Repository
 from resources.dbcontext import DbContext
 from models.user import User
