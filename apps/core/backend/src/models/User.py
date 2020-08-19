@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, String, Integer
+from sqlalchemy import Boolean, Column, String
 
-from .base import Base
+from models.base import Base
 
 
 class User(Base):

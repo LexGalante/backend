@@ -4,9 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-flake8 = "*"
 isort = "*"
 sqlalchemy-stubs = "*"
+flake8 = "*"
 
 [packages]
 fastapi = "*"

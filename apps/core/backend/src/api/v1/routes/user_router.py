@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/paginate/{page}/{page_size}", response_model=List[UserResponseSchema])
-def index(
+def get(
     dbcontext: DbContext = Depends(get_dbcontext),
     current_user: User = Depends(get_current_user),
     page: Optional[int] = 1,
@@ -23,7 +23,7 @@ def index(
 
 
 @router.get("/{email}", response_model=UserResponseSchema)
-def get(
+def get_by_email(
     dbcontext: DbContext = Depends(get_dbcontext),
     current_user: User = Depends(get_current_user),
     email: str = None
