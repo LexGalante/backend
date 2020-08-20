@@ -1,4 +1,5 @@
 import uvicorn
+import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException
@@ -9,10 +10,12 @@ from api.v1 import api as api_v1
 from middlewares.error_middleware import http_error_handler
 from resources.config import API_ENABLE_CORS, API_ENABLE_HTTPS_REDIRECT
 
+# configure logging
+logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
 # load configurations
 load_dotenv()
 # prepare application
-app = FastAPI()
+app = FastAPI(title="iggle api backend")
 # inject cors
 if API_ENABLE_CORS:
     app.add_middleware(

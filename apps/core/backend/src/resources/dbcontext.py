@@ -1,13 +1,15 @@
+import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .logger import Logger
 from resources.config import CONNECTION_STRING
 
 
 class DbContext():
     engine = None
     session: Session = None
+    logger = logging.getLogger(__name__)
 
     def factory_engine(self):
         self.engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
@@ -32,7 +34,7 @@ class DbContext():
         try:
             self.session.commit()
         except Exception as e:
-            Logger.info(repr(e))
+            self.logger.info(repr(e))
             self.session.rollback()
             raise e
         finally:

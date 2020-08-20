@@ -51,5 +51,60 @@ def post(
             "name": application.name,
             "active": application.active
         }
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.put("/{name}", status_code=status.HTTP_202_ACCEPTED)
+def put(
+    dbcontex: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None,
+    schema: ApplicationRequestSchema = None
+):
+    try:
+        application = ApplicationService(dbcontex).update(schema.__dict__, name, current_user)
+
+        return ApplicationResponseSchema.from_orm(application)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch("/{name}/activate", status_code=status.HTTP_200_OK)
+def activate(
+    dbcontex: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None
+):
+    try:
+        application = ApplicationService(dbcontex).activate(name, current_user)
+
+        return {
+            "id": application.id,
+            "name": application.name,
+            "active": application.active
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch("/{name}/inactive", status_code=status.HTTP_200_OK)
+def inactive(
+    dbcontex: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None
+):
+    try:
+        application = ApplicationService(dbcontex).inactive(name, current_user)
+
+        return {
+            "id": application.id,
+            "name": application.name,
+            "active": application.active
+        }
+    except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
