@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from resources.config import CONNECTION_STRING
@@ -39,3 +39,16 @@ class DbContext():
             raise e
         finally:
             self.session.close()
+
+    def execute(self, sql: str, parameters: dict):
+        result = self.session.execute(sql, parameters)
+
+        return result
+
+    @staticmethod
+    def raw(sql: str):
+        sql = text(sql)
+        engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
+        result = engine.execute(sql)
+
+        return result

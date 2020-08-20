@@ -38,9 +38,12 @@ class Application(Base):
         name = shorten(name, width=30, placeholder="_")
         self.name = name
 
-    def add_user(self, user: User):
-        applicationUser = ApplicationUser(application_id=self.id, user_id=user.id)
+    def add_user(self, user_id: int):
+        applicationUser = ApplicationUser(application_id=self.id, user_id=user_id)
         self.users.append(applicationUser)
+
+    def remove_user(self, user_id: int):
+        self.users = [user for user in self.users if user.user_id != user_id]
 
     @staticmethod
     def get_fields_can_be_updated():
@@ -51,9 +54,10 @@ class ApplicationUser(Base):
     __tablename__ = "application_users"
 
     application_id = Column(Integer, ForeignKey(Application.id), primary_key=True)
-    user_id = Column(Integer, nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False, primary_key=True)
     # relations
     application = relationship("Application", lazy="select", back_populates="users")
+    user = relationship("User", lazy="select")
 
 
 class ApplicationEnviroment(Base):

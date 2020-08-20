@@ -21,7 +21,7 @@ class ApplicationService():
         return self._repository.get_all_by_user(user)
 
     def get_by_name(self, name: str, user: User) -> Application:
-        application = self._repository.get_by_name(name)
+        application = self._repository.get_by_name(name, user)
         if application is None:
             raise ValueError(f"Not found or Not permission access application{name}")
 
@@ -36,7 +36,7 @@ class ApplicationService():
             application.updated_at = datetime.now()
             application.updated_by = user.id
             application.active = True
-            application.add_user(user)
+            application.add_user(user.id)
             self._repository.create(application)
             self._dbcontext.commit()
             self._logger.info(f"{user.email} created new application {application.name}")
@@ -100,3 +100,29 @@ class ApplicationService():
         application.generate_name()
         if self._repository.name_exists(application.name):
             return self.generate_name(f"{application.real_name}_{randint(1, 100)}")
+
+    def add_user(self, name: str, user_id: int, user: User):
+        application = self._repository.get_by_name(name, user)
+        if application is None:
+            raise ValueError(f"{name} not found, or you doens't have permission")
+        application.add_user(user_id)
+        application.updated_at = datetime.now()
+        application.updated_by = user.id
+        self._dbcontext.commit()
+
+        self._logger.info(f"{user.email} add new user into application {application.name}")
+
+        return application
+
+    def remove_user(self, name: str, user_id: int, user: User):
+        application = self._repository.get_by_name(name, user)
+        if application is None:
+            raise ValueError(f"{name} not found, or you doens't have permission")
+        self._dbcontext.execute(
+            "DELETE FROM application_users WHERE application_id = :application_id AND user_id = :user_id",
+            {"application_id": application.id, "user_id": user_id})
+        self._dbcontext.commit()
+
+        self._logger.info(f"{user.email} remove user({user_id}) on application {application.name}")
+
+        return application
