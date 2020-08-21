@@ -30,13 +30,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme), dbcontext: DbCon
         email = decode_token_jwt(token)
         user = UserService(dbcontext).get_by_email(email)
         if user is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
         if not user.active:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"User ({email}) inactive")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail=f"User ({email}) inactive")
 
         return user
     except ExpiredSignatureError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except JWSSignatureError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")
-
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Invalid token")

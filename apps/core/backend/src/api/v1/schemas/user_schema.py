@@ -7,4 +7,3 @@ class UserResponseSchema(BaseModel):
 
     class Config:
         orm_mode = True
-

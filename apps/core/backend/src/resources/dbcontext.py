@@ -17,8 +17,8 @@ class DbContext():
     def start(self):
         if self.session is None:
             self.factory_engine()
-            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-            self.session = SessionLocal()
+            session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            self.session = session_local()
 
     def finish(self):
         if self.session is not None:

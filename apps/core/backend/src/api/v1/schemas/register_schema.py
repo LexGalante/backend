@@ -25,5 +25,3 @@ class RegisterRequestSchema(BaseModel):
 
     class Config:
         orm_mode = True
-
-

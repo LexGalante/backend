@@ -1,13 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
+
 from api.v1.dependency_injection import get_current_user, get_dbcontext
+from api.v1.schemas.application_user_schema import ApplicationUserRequestSchema
 from models.user import User
 from resources.dbcontext import DbContext
 from services.application_service import ApplicationService
-from sqlalchemy.exc import IntegrityError
-from api.v1.schemas.application_user_schema import ApplicationUserRequestSchema
-
 
 router = APIRouter()
 
@@ -35,7 +35,8 @@ def post(
     name: str = None
 ):
     try:
-        application = ApplicationService(dbcontext).add_user(name, schema.user_id, current_user)
+        application = ApplicationService(dbcontext).add_user(
+            name, schema.user_id, current_user)
         users: List[str] = [str(user.user.email) for user in application.users]
 
         return users
@@ -51,7 +52,8 @@ def delete(
     name: str = None
 ):
     try:
-        application = ApplicationService(dbcontext).remove_user(name, user_id, current_user)
+        application = ApplicationService(
+            dbcontext).remove_user(name, user_id, current_user)
         users: List[str] = [str(user.user.email) for user in application.users]
 
         return users
