@@ -1,17 +1,18 @@
 """create table environments
 
-Revision ID: 7cb3d8d8b071
-Revises: 76f9eb571349
-Create Date: 2020-08-20 23:14:27.758528
+Revision ID: b15b0aa87418
+Revises: 685fc62404eb
+Create Date: 2020-08-21 12:11:27.556501
 
 """
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
+
 # revision identifiers, used by Alembic.
-revision = '7cb3d8d8b071'
-down_revision = '76f9eb571349'
+revision = 'b15b0aa87418'
+down_revision = '685fc62404eb'
 branch_labels = None
 depends_on = None
 

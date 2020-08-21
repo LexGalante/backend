@@ -30,7 +30,6 @@ class Application(Base):
     updated_by = Column(Integer, ForeignKey(User.id))
     # relations
     users = relationship("ApplicationUser", lazy="select", back_populates="application")
-    enviroments = relationship("ApplicationEnviroment", lazy="select", back_populates="application")
     features = relationship("ApplicationFeature", lazy="select", back_populates="application")
 
     def generate_name(self):
@@ -55,34 +54,17 @@ class ApplicationUser(Base):
     __tablename__ = "application_users"
 
     application_id = Column(Integer, ForeignKey(Application.id), primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), primary_key=True)
     # relations
     application = relationship("Application", lazy="select", back_populates="users")
     user = relationship("User", lazy="select")
-
-
-class ApplicationEnviroment(Base):
-    __tablename__ = "application_environments"
-
-    application_id = Column(Integer, ForeignKey(Application.id))
-    environment_id = Column(Integer, ForeignKey(Environment.id))
-    name = Column(String(30), nullable=False)
-    real_name = Column(String(250), nullable=False)
-    description = Column(String(250), nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.now())
-    created_by = Column(Integer, ForeignKey(User.id))
-    updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.now())
-    updated_by = Column(Integer, ForeignKey(User.id))
-    # relations
-    application = relationship("Application", lazy="select", back_populates="enviroments")
-    environment = relationship("Environment", lazy="select")
 
 
 class ApplicationFeature(Base):
     __tablename__ = "application_features"
 
     application_id = Column(Integer, ForeignKey(Application.id))
-    enviroment_id = Column(Integer, ForeignKey(ApplicationEnviroment.id))
+    environment_id = Column(Integer, ForeignKey(Environment.id))
     name = Column(String(250), nullable=False)
     enable = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.now())
@@ -91,3 +73,4 @@ class ApplicationFeature(Base):
     updated_by = Column(Integer, ForeignKey(User.id))
     # relations
     application = relationship("Application", lazy="select", back_populates="features")
+    environment = relationship("Environment", lazy="select")

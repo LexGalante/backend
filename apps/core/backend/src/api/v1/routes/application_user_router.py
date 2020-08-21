@@ -27,8 +27,8 @@ def get(
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
 
 
-@router.post("/", status_code=status.HTTP_200_OK)
-def post(
+@router.patch("/", status_code=status.HTTP_200_OK)
+def patch(
     dbcontext: DbContext = Depends(get_dbcontext),
     current_user: User = Depends(get_current_user),
     schema: ApplicationUserRequestSchema = None,

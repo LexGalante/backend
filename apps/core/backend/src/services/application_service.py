@@ -101,7 +101,7 @@ class ApplicationService():
         if self._repository.name_exists(application.name):
             return self.generate_name(f"{application.real_name}_{randint(1, 100)}")
 
-    def add_user(self, name: str, user_id: int, user: User):
+    def add_user(self, name: str, user_id: int, user: User) -> Application:
         application = self._repository.get_by_name(name, user)
         if application is None:
             raise ValueError(f"{name} not found, or you doens't have permission")
@@ -114,7 +114,7 @@ class ApplicationService():
 
         return application
 
-    def remove_user(self, name: str, user_id: int, user: User):
+    def remove_user(self, name: str, user_id: int, user: User) -> Application:
         application = self._repository.get_by_name(name, user)
         if application is None:
             raise ValueError(f"{name} not found, or you doens't have permission")
