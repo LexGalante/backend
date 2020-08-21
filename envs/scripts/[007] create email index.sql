@@ -1,1 +1,0 @@
-CREATE INDEX users_email_idx ON iggle.users (email);

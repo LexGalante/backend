@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 
 from .base import Base
 from .user import User
+from .environment import Environment
 
 
 class Application(Base):
@@ -39,8 +40,8 @@ class Application(Base):
         self.name = name
 
     def add_user(self, user_id: int):
-        applicationUser = ApplicationUser(application_id=self.id, user_id=user_id)
-        self.users.append(applicationUser)
+        application_user = ApplicationUser(application_id=self.id, user_id=user_id)
+        self.users.append(application_user)
 
     def remove_user(self, user_id: int):
         self.users = [user for user in self.users if user.user_id != user_id]
@@ -64,6 +65,7 @@ class ApplicationEnviroment(Base):
     __tablename__ = "application_environments"
 
     application_id = Column(Integer, ForeignKey(Application.id))
+    environment_id = Column(Integer, ForeignKey(Environment.id))
     name = Column(String(30), nullable=False)
     real_name = Column(String(250), nullable=False)
     description = Column(String(250), nullable=False)
@@ -73,6 +75,7 @@ class ApplicationEnviroment(Base):
     updated_by = Column(Integer, ForeignKey(User.id))
     # relations
     application = relationship("Application", lazy="select", back_populates="enviroments")
+    environment = relationship("Environment", lazy="select")
 
 
 class ApplicationFeature(Base):
@@ -88,7 +91,3 @@ class ApplicationFeature(Base):
     updated_by = Column(Integer, ForeignKey(User.id))
     # relations
     application = relationship("Application", lazy="select", back_populates="features")
-
-
-
-
