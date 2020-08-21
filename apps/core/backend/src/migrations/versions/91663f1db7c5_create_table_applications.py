@@ -21,7 +21,7 @@ def upgrade():
     op.create_table(
         "applications",
         sa.Column("id", sa.Integer, primary_key=True, index=True),
-        sa.Column("name", sa.String(30), nullable=False, unique=True),
+        sa.Column("name", sa.String(30), nullable=False, unique=True, index=True),
         sa.Column("real_name", sa.String(250), nullable=False),
         sa.Column("model", sa.Integer, nullable=False, default=1),
         sa.Column("description", sa.String(250), nullable=False),

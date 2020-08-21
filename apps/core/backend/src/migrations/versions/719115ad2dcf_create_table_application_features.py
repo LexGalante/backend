@@ -23,7 +23,7 @@ def upgrade():
         sa.Column("id", sa.Integer, primary_key=True, index=True),
         sa.Column("application_id", sa.Integer, sa.ForeignKey("applications.id")),
         sa.Column("enviroment_id", sa.Integer, sa.ForeignKey("application_environments.id")),
-        sa.Column("name", sa.String(250), nullable=False),
+        sa.Column("name", sa.String(250), index=True, nullable=False),
         sa.Column("enable", sa.Boolean, nullable=False, default=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, default=datetime.now()),
         sa.Column("created_by", sa.Integer, sa.ForeignKey("users.id")),

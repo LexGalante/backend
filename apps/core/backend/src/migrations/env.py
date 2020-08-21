@@ -1,8 +1,10 @@
+from os import getenv
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
+from dotenv import load_dotenv
 from alembic import context
 
 # this is the Alembic Config object, which provides
@@ -23,6 +25,12 @@ target_metadata = None
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+load_dotenv()
+if getenv("ENVIRONMENT") == "testing":
+    config.set_main_option("sqlalchemy.url", getenv("CONNECTION_STRING_TEST"))
+else:
+    config.set_main_option("sqlalchemy.url", str(getenv("CONNECTION_STRING")))
 
 
 def run_migrations_offline():

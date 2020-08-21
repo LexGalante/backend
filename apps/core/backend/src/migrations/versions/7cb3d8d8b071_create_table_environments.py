@@ -21,7 +21,7 @@ def upgrade():
     op.create_table(
         "environments",
         sa.Column("id", sa.Integer, primary_key=True, index=True),
-        sa.Column("password", sa.String, nullable=False),
+        sa.Column("name", sa.String, unique=True, index=True, nullable=False),
         sa.Column("active", sa.Boolean, nullable=False, default=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, default=datetime.now()),
         sa.Column("created_by", sa.Integer, sa.ForeignKey("users.id")),
