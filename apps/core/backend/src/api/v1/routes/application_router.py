@@ -20,7 +20,7 @@ def get(
 ):
     applications = ApplicationService(dbcontext).get_all_by_user(current_user)
 
-    return [ApplicationResponseSchema.for_orm(application) for application in applications]
+    return [ApplicationResponseSchema.from_orm(application) for application in applications]
 
 
 @router.get("/{name}", status_code=status.HTTP_200_OK, response_model=ApplicationResponseSchema)

@@ -8,6 +8,7 @@ from typing import List
 from models.application import Application
 from models.user import User
 from repositories.application_repository import ApplicationRepository
+from repositories.environment_repository import EnvironmentRepository
 from resources.dbcontext import DbContext
 
 
@@ -15,6 +16,7 @@ class ApplicationService():
     def __init__(self, dbcontext: DbContext):
         self._dbcontext = dbcontext
         self._repository: ApplicationRepository = ApplicationRepository(dbcontext)
+        self._environment_repository: EnvironmentRepository = EnvironmentRepository(dbcontext)
         self._logger = logging.getLogger(__name__)
 
     def get_all_by_user(self, user: User) -> List[Application]:
@@ -39,7 +41,8 @@ class ApplicationService():
             application.add_user(user.id)
             self._repository.create(application)
             self._dbcontext.commit()
-            self._logger.info(f"{user.email} created new application {application.name}")
+            self._logger.info(
+                f"{user.email} created new application {application.name}")
 
             return application
         except Exception as e:
@@ -110,7 +113,8 @@ class ApplicationService():
         application.updated_by = user.id
         self._dbcontext.commit()
 
-        self._logger.info(f"{user.email} add new user into application {application.name}")
+        self._logger.info(
+            f"{user.email} add new user into application {application.name}")
 
         return application
 
@@ -123,6 +127,76 @@ class ApplicationService():
             {"application_id": application.id, "user_id": user_id})
         self._dbcontext.commit()
 
-        self._logger.info(f"{user.email} remove user({user_id}) on application {application.name}")
+        self._logger.info(
+            f"{user.email} remove user({user_id}) on application {application.name}")
+
+        return application
+
+    def add_feature(self, name: str, data: dict, user: User) -> Application:
+        application = self._repository.get_by_name(name, user)
+        if application is None:
+            raise ValueError(f"{name} not found, or you doens't have permission")
+        application.add_feature(
+            environment_id=data["environment_id"],
+            name=data["name"],
+            enable=data["enable"],
+            user=user
+        )
+        self._dbcontext.commit()
+
+        self._logger.info(
+            f"{user.email} add new feature into application({application.name})")
+
+        return application
+
+    def add_feature_all_environments(self, name: str, data: dict, user: User) -> Application:
+        try:
+            application = self._repository.get_by_name(name, user)
+            if application is None:
+                raise ValueError(f"{name} not found, or you doens't have permission")
+            for environment in self._environment_repository.get_all():
+                application.add_feature(
+                    environment_id=environment.id,
+                    name=data["name"],
+                    enable=data["enable"],
+                    user=user
+                )
+
+            self._dbcontext.commit()
+
+            self._logger.info(
+                f"{user.email} add new features into application({application.name})")
+
+            return application
+        except Exception as e:
+            self._dbcontext.rollback()
+            self._logger.error(f"Error occurred when {user.email} tryng to add new features {str(e)}")
+            raise
+
+    def remove_feature(self, name: str, feature_name: str, environment_id: int, user: User) -> Application:
+        application = self._repository.get_by_name(name, user)
+        if application is None:
+            raise ValueError(f"{name} not found, or you doens't have permission")
+        for key, feature in enumerate(application.features):
+            if feature.name == feature_name and feature.environment_id == environment_id:
+                del application.features[key]
+        self._dbcontext.session.commit()
+
+        self._logger.info(
+            f"{user.email} remove feature({feature_name}) from applicarion({application.name})")
+
+        return application
+
+    def remove_feature_all_environments(self, name: str, feature_name: str, user: User) -> Application:
+        application = self._repository.get_by_name(name, user)
+        if application is None:
+            raise ValueError(f"{name} not found, or you doens't have permission")
+        for key, feature in enumerate(application.features):
+            if feature.name == feature_name:
+                del application.features[key]
+        self._dbcontext.session.commit()
+
+        self._logger.info(
+            f"{user.email} remove features for all environments from applicarion({application.name})")
 
         return application

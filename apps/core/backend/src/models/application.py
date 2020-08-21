@@ -39,11 +39,20 @@ class Application(Base):
         self.name = name
 
     def add_user(self, user_id: int):
-        application_user = ApplicationUser(application_id=self.id, user_id=user_id)
-        self.users.append(application_user)
+        user = ApplicationUser(application_id=self.id, user_id=user_id)
+        self.users.append(user)
 
-    def remove_user(self, user_id: int):
-        self.users = [user for user in self.users if user.user_id != user_id]
+    def add_feature(self, environment_id: int, name: str, enable: bool, user: User):
+        application_feature = ApplicationFeature()
+        application_feature.application_id = self.id
+        application_feature.environment_id = environment_id
+        application_feature.name = name
+        application_feature.enable = enable
+        application_feature.created_at = datetime.now()
+        application_feature.created_by = user.id
+        application_feature.updated_at = datetime.now()
+        application_feature.updated_by = user.id
+        self.features.append(application_feature)
 
     @staticmethod
     def get_fields_can_be_updated():

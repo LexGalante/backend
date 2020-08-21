@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from api.v1.dependency_injection import get_current_user, get_dbcontext
-from api.v1.schemas.application_user_schema import ApplicationUserRequestSchema
+from api.v1.schemas.application_schema import ApplicationUserRequestSchema
 from models.user import User
 from resources.dbcontext import DbContext
 from services.application_service import ApplicationService
@@ -40,8 +40,11 @@ def patch(
         users: List[str] = [str(user.user.email) for user in application.users]
 
         return users
-    except IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"The user({schema.user_id}) already exists this application"
+        )
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_200_OK)

@@ -5,6 +5,7 @@ from .routes import login_router
 from .routes import user_router
 from .routes import application_router
 from .routes import application_user_router
+from .routes import application_feature_router
 
 
 prefix = "/v1"
@@ -33,4 +34,9 @@ router.include_router(
     router=application_user_router.router,
     prefix="/applications/{name}/users",
     tags=["/v1/applications/{name}/users"]
+)
+router.include_router(
+    router=application_feature_router.router,
+    prefix="/applications/{name}/features",
+    tags=["/v1/applications/{name}/features"]
 )

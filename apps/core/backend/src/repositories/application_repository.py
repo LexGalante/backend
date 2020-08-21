@@ -14,7 +14,6 @@ class ApplicationRepository(Repository):
     def get_all_by_user(self, user: User) -> List[Application]:
         return self._db.session.query(
             Application,
-            ApplicationUser
         ).filter(ApplicationUser.user_id == user.id).all()
 
     def get_by_name(self, name: str, user: User) -> Application:
