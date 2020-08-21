@@ -7,8 +7,7 @@ Create Date: 2020-08-20 23:14:27.758528
 """
 from alembic import op
 import sqlalchemy as sa
-from datetime import datetime
-
+from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = '7cb3d8d8b071'
@@ -22,12 +21,20 @@ def upgrade():
         "environments",
         sa.Column("id", sa.Integer, primary_key=True, index=True),
         sa.Column("name", sa.String, unique=True, index=True, nullable=False),
-        sa.Column("active", sa.Boolean, nullable=False, default=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, default=datetime.now()),
-        sa.Column("created_by", sa.Integer, sa.ForeignKey("users.id")),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, default=datetime.now()),
-        sa.Column("updated_by", sa.Integer, sa.ForeignKey("users.id"))
+        sa.Column("description", sa.String, nullable=False),
+        sa.Column("active", sa.Boolean, nullable=False, default=True)
     )
+
+    bind = op.get_bind()
+    session = Session(bind=bind)
+    session.execute("INSERT INTO environments(name, description, active) VALUES(:name, :description, :active)", {
+                    "name": "dev", "description": "Development", "active": True})
+    session.execute("INSERT INTO environments(name, description, active) VALUES(:name, :description, :active)", {
+                    "name": "tes", "description": "Testing", "active": True})
+    session.execute("INSERT INTO environments(name, description, active) VALUES(:name, :description, :active)", {
+                    "name": "hml", "description": "Homologation", "active": True})
+    session.execute("INSERT INTO environments(name, description, active) VALUES(:name, :description, :active)", {
+                    "name": "prd", "description": "Production", "active": True})
 
 
 def downgrade():
