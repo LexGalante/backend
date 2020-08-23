@@ -7,6 +7,10 @@ verify_ssl = true
 isort = "*"
 sqlalchemy-stubs = "*"
 flake8 = "*"
+pytest = "*"
+requests = "*"
+pytest-mock = "*"
+alchemy-mock = "*"
 
 [packages]
 fastapi = "*"
@@ -20,6 +24,7 @@ python-jose = {extras = ["cryptography"], version = "*"}
 passlib = {extras = ["bcrypt"], version = "*"}
 python-multipart = "*"
 alembic = "*"
+databases = {extras = ["postgresql"], version = "*"}
 
 [requires]
 python_version = "3.7"

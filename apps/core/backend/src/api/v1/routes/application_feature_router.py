@@ -60,6 +60,96 @@ def patch(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"The feature({schema.name}) already exists this environment"
         )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+
+
+@router.patch(
+    "/{feature_name}/{environment_id}/activate",
+    status_code=status.HTTP_200_OK,
+    response_model=List[ApplicationFeatureResponseSchema]
+)
+def activate(
+    dbcontext: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None,
+    environment_id: int = None,
+    feature_name: str = None
+):
+    try:
+        application = ApplicationService(dbcontext).activate_feature(name, environment_id, feature_name, current_user)
+        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
+            environment_id=feature.environment_id,
+            environment=feature.environment.name,
+            name=feature.name,
+            enable=feature.enable) for feature in application.features]
+
+        return features
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+
+
+@router.patch("/activate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
+def activate_all(
+    dbcontext: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None
+):
+    try:
+        application = ApplicationService(dbcontext).activate_all_feature(name, current_user)
+        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
+            environment_id=feature.environment_id,
+            environment=feature.environment.name,
+            name=feature.name,
+            enable=feature.enable) for feature in application.features]
+
+        return features
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+
+
+@router.patch(
+    "/{feature_name}/{environment_id}/inactivate",
+    status_code=status.HTTP_200_OK,
+    response_model=List[ApplicationFeatureResponseSchema]
+)
+def inactivate(
+    dbcontext: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None,
+    environment_id: int = None,
+    feature_name: str = None
+):
+    try:
+        application = ApplicationService(dbcontext).inactivate_feature(name, environment_id, feature_name, current_user)
+        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
+            environment_id=feature.environment_id,
+            environment=feature.environment.name,
+            name=feature.name,
+            enable=feature.enable) for feature in application.features]
+
+        return features
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+
+
+@router.patch("/inactivate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
+def inactivate_all(
+    dbcontext: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user),
+    name: str = None
+):
+    try:
+        application = ApplicationService(dbcontext).inactivate_all_feature(name, current_user)
+        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
+            environment_id=feature.environment_id,
+            environment=feature.environment.name,
+            name=feature.name,
+            enable=feature.enable) for feature in application.features]
+
+        return features
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
 
 
 @router.delete("/{feature_name}", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
@@ -86,3 +176,5 @@ def delete(
         return features
     except IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))

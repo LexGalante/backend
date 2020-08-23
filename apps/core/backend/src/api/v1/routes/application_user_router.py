@@ -45,6 +45,8 @@ def patch(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"The user({schema.user_id}) already exists this application"
         )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_200_OK)
@@ -62,3 +64,5 @@ def delete(
         return users
     except IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))

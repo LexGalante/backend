@@ -37,7 +37,7 @@ class ApplicationService():
             application.created_by = user.id
             application.updated_at = datetime.now()
             application.updated_by = user.id
-            application.active = True
+            application.activate = True
             application.add_user(user.id)
             self._repository.create(application)
             self._dbcontext.commit()
@@ -52,9 +52,7 @@ class ApplicationService():
             raise e
 
     def update(self, data: dict, name: str, user: User):
-        application: Application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         application.real_name = data["real_name"]
         application.model = data["model"]
         application.description = data["description"]
@@ -68,33 +66,29 @@ class ApplicationService():
         return application
 
     def activate(self, name: str, user: User):
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         application.updated_at = datetime.now()
         application.updated_by = user.id
-        application.active = True
+        application.activate = True
         self._dbcontext.commit()
 
         self._logger.info(f"{user.email} activate application {application.name}")
 
         return application
 
-    def inactive(self, name: str, user: User):
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+    def inactivate(self, name: str, user: User):
+        application = self.get_by_name(name, user)
         application.updated_at = datetime.now()
         application.updated_by = user.id
-        application.active = False
+        application.activate = False
         self._dbcontext.commit()
 
-        self._logger.info(f"{user.email} inactive application {application.name}")
+        self._logger.info(f"{user.email} inactivate application {application.name}")
 
         return application
 
     def delete(self, name: str, user: User):
-        return self.inactive(name, user)
+        return self.inactivate(name, user)
 
     def generate_name(self, application: Application) -> str:
         """
@@ -105,9 +99,7 @@ class ApplicationService():
             return self.generate_name(f"{application.real_name}_{randint(1, 100)}")
 
     def add_user(self, name: str, user_id: int, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         application.add_user(user_id)
         application.updated_at = datetime.now()
         application.updated_by = user.id
@@ -119,9 +111,7 @@ class ApplicationService():
         return application
 
     def remove_user(self, name: str, user_id: int, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         self._dbcontext.execute(
             "DELETE FROM application_users WHERE application_id = :application_id AND user_id = :user_id",
             {"application_id": application.id, "user_id": user_id})
@@ -133,9 +123,7 @@ class ApplicationService():
         return application
 
     def add_feature(self, name: str, data: dict, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         application.add_feature(
             environment_id=data["environment_id"],
             name=data["name"],
@@ -151,9 +139,7 @@ class ApplicationService():
 
     def add_feature_all_environments(self, name: str, data: dict, user: User) -> Application:
         try:
-            application = self._repository.get_by_name(name, user)
-            if application is None:
-                raise ValueError(f"{name} not found, or you doens't have permission")
+            application = self.get_by_name(name, user)
             for environment in self._environment_repository.get_all():
                 application.add_feature(
                     environment_id=environment.id,
@@ -174,13 +160,11 @@ class ApplicationService():
             raise
 
     def remove_feature(self, name: str, feature_name: str, environment_id: int, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         for key, feature in enumerate(application.features):
             if feature.name == feature_name and feature.environment_id == environment_id:
                 del application.features[key]
-        self._dbcontext.session.commit()
+        self._dbcontext.commit()
 
         self._logger.info(
             f"{user.email} remove feature({feature_name}) from applicarion({application.name})")
@@ -188,15 +172,58 @@ class ApplicationService():
         return application
 
     def remove_feature_all_environments(self, name: str, feature_name: str, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
-        if application is None:
-            raise ValueError(f"{name} not found, or you doens't have permission")
+        application = self.get_by_name(name, user)
         for key, feature in enumerate(application.features):
             if feature.name == feature_name:
                 del application.features[key]
-        self._dbcontext.session.commit()
+        self._dbcontext.commit()
 
         self._logger.info(
             f"{user.email} remove features for all environments from applicarion({application.name})")
 
         return application
+
+    def activate_feature(self, name: str, environment_id: int, feature_name: str, user: User) -> Application:
+        return self.toggle_feature(name, environment_id, feature_name, True, user)
+
+    def inactivate_feature(self, name: str, environment_id: int, feature_name: str, user: User) -> Application:
+        return self.toggle_feature(name, environment_id, feature_name, False, user)
+
+    def toggle_feature(self, name: str, env: int, feature_name: str, status: bool, user: User) -> Application:
+        application = self.get_by_name(name, user)
+        for feature in application.features:
+            if feature.name == feature_name and feature.environment_id == env:
+                feature.enable = status
+                feature.updated_at = datetime.now()
+                feature.updated_by = user.id
+        self._dbcontext.commit()
+
+        self._logger.info(
+            f"{user.email} toggle({feature_name}) for({status}) into application({application.name}) in env({env})")
+
+        return application
+
+    def activate_all_feature(self, name: str, user: User) -> Application:
+        return self.toggle_all_features(name, True, user)
+
+    def inactivate_all_feature(self, name: str, user: User) -> Application:
+        return self.toggle_all_features(name, False, user)
+
+    def toggle_all_features(self, name: str, status: bool, user: User) -> Application:
+        try:
+            application = self.get_by_name(name, user)
+            for feature in application.features:
+                feature.enable = status
+                feature.updated_at = datetime.now()
+                feature.updated_by = user.id
+            self._dbcontext.commit()
+
+            self._logger.info(
+                f"{user.email} toggle all features for({status}) into application({name})")
+
+            return application
+        except Exception as e:
+            self._dbcontext.rollback()
+            self._logger.error(
+                f"Error occurred when {user.email} tryng to toggle({status}) features into {name}, {str(e)}")
+            raise

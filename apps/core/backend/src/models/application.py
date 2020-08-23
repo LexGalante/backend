@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from textwrap import shorten
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -61,6 +61,9 @@ class Application(Base):
 
 class ApplicationUser(Base):
     __tablename__ = "application_users"
+    __table_args__ = (
+        UniqueConstraint('application_id', 'user_id', name='application_users_un'),
+    )
 
     application_id = Column(Integer, ForeignKey(Application.id), primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id), primary_key=True)
@@ -71,6 +74,9 @@ class ApplicationUser(Base):
 
 class ApplicationFeature(Base):
     __tablename__ = "application_features"
+    __table_args__ = (
+        UniqueConstraint('application_id', 'environment_id', 'name', name='application_users_un'),
+    )
 
     application_id = Column(Integer, ForeignKey(Application.id))
     environment_id = Column(Integer, ForeignKey(Environment.id))
