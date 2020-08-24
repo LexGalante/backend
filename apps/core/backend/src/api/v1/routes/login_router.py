@@ -10,7 +10,10 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_200_OK, response_model=AuthResponseSchema)
-def index(dbcontext: DbContext = Depends(get_dbcontext), schema: AuthRequestSchema = None):
+def index(
+    schema: AuthRequestSchema,
+    dbcontext: DbContext = Depends(get_dbcontext)
+):
     try:
         token: str = AuthService(dbcontext).authenticate(schema.username, schema.password)
 

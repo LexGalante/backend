@@ -3,16 +3,23 @@ import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from resources.config import CONNECTION_STRING
+from resources.config import CONNECTION_STRING, CONNECTION_STRING_TEST
 
 
 class DbContext():
     engine = None
     session: Session = None
+    in_testing: bool = False
     logger = logging.getLogger(__name__)
 
+    def __init__(self, in_testing: bool = False):
+        self.in_testing = in_testing
+
     def factory_engine(self):
-        self.engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
+        if self.in_testing:
+            self.engine = create_engine(CONNECTION_STRING_TEST, pool_pre_ping=True)
+        else:
+            self.engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
 
     def start(self):
         if self.session is None:
@@ -42,13 +49,5 @@ class DbContext():
 
     def execute(self, sql: str, parameters: dict):
         result = self.session.execute(sql, parameters)
-
-        return result
-
-    @staticmethod
-    def raw(sql: str):
-        sql = text(sql)
-        engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)
-        result = engine.execute(sql)
 
         return result

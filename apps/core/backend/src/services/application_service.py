@@ -31,7 +31,11 @@ class ApplicationService():
 
     def create(self, data: dict, user: User) -> Application:
         try:
-            application = Application(**data)
+            application = Application()
+            application.real_name = data["real_name"]
+            application.model = data["model"]
+            application.description = data["description"]
+            application.details = data["details"] if "details" in data.keys() else None
             self.generate_name(application)
             application.created_at = datetime.now()
             application.created_by = user.id

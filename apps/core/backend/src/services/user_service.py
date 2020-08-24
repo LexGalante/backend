@@ -18,19 +18,17 @@ class UserService():
         return self._repository.get_by_email(email)
 
     def create(self, data) -> User:
-        user = User(**data)
-        user.password = encrypt(user.password)
-        user.active = True
+        user = User()
+        user.email = data["email"]
+        user.password = encrypt(data["password"])
+        if "active" in data.keys():
+            user.active = data["active"]
+        else:
+            user.active = True
         self._repository.create(user)
         self._dbcontext.commit()
 
         return user
-
-    def update(self, data) -> User:
-        pass
-
-    def delete(self, data):
-        pass
 
     def authenticate(self, email, password) -> User:
         user = self._repository.get_by_email(email)

@@ -16,7 +16,7 @@ class UserRepository(Repository):
         return self._db.session.query(User).filter(id == id).first()
 
     def get_by_email(self, email: str) -> User:
-        return self._db.session.query(User).filter(email == email).first()
+        return self._db.session.query(User).filter(User.email == email).first()
 
     def create(self, user: User):
         self._db.session.add(user)
