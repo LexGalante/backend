@@ -14,9 +14,9 @@ router = APIRouter()
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[str])
 def get(
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).get_by_name(name, current_user)
@@ -29,10 +29,10 @@ def get(
 
 @router.patch("/", status_code=status.HTTP_200_OK)
 def patch(
+    name: str,
+    schema: ApplicationUserRequestSchema,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    schema: ApplicationUserRequestSchema = None,
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).add_user(
@@ -43,7 +43,7 @@ def patch(
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"The user({schema.user_id}) already exists this application"
+            detail=f"The user({schema.user_id}) cannot possible to add in application {name}"
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))

@@ -25,7 +25,7 @@ class ApplicationService():
     def get_by_name(self, name: str, user: User) -> Application:
         application = self._repository.get_by_name(name, user)
         if application is None:
-            raise ValueError(f"Not found or Not permission access application{name}")
+            raise ValueError(f"Not found or Not permission access application {name}")
 
         return application
 
@@ -99,8 +99,8 @@ class ApplicationService():
         Genarate unique name for Application
         """
         application.generate_name()
-        if self._repository.name_exists(application.name):
-            return self.generate_name(f"{application.real_name}_{randint(1, 100)}")
+        while self._repository.name_exists(application.name):
+            application.generate_name(f"{application.real_name}_{randint(1, 100)}")
 
     def add_user(self, name: str, user_id: int, user: User) -> Application:
         application = self.get_by_name(name, user)

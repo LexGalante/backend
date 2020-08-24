@@ -25,9 +25,9 @@ def get(
 
 @router.get("/{name}", status_code=status.HTTP_200_OK, response_model=ApplicationResponseSchema)
 def get_by_name(
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).get_by_name(name, current_user)
@@ -39,9 +39,9 @@ def get_by_name(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def post(
+    schema: ApplicationRequestSchema,
     dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    schema: ApplicationRequestSchema = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontex).create(schema.__dict__, current_user)
@@ -59,10 +59,10 @@ def post(
 
 @router.put("/{name}", status_code=status.HTTP_202_ACCEPTED)
 def put(
+    name: str,
+    schema: ApplicationRequestSchema,
     dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None,
-    schema: ApplicationRequestSchema = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontex).update(schema.__dict__, name, current_user)
@@ -76,9 +76,9 @@ def put(
 
 @router.patch("/{name}/activate", status_code=status.HTTP_200_OK)
 def activate(
+    name: str,
     dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontex).activate(name, current_user)
@@ -94,9 +94,9 @@ def activate(
 
 @router.patch("/{name}/inactive", status_code=status.HTTP_200_OK)
 def inactive(
+    name: str,
     dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontex).inactive(name, current_user)

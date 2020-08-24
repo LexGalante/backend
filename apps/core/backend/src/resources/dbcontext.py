@@ -1,6 +1,7 @@
 import logging
+import os
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from resources.config import CONNECTION_STRING, CONNECTION_STRING_TEST
@@ -16,7 +17,7 @@ class DbContext():
         self.in_testing = in_testing
 
     def factory_engine(self):
-        if self.in_testing:
+        if self.in_testing or os.getenv("ENVIRONMENT") == "testing":
             self.engine = create_engine(CONNECTION_STRING_TEST, pool_pre_ping=True)
         else:
             self.engine = create_engine(CONNECTION_STRING, pool_pre_ping=True)

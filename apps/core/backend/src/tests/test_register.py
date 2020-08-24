@@ -1,11 +1,11 @@
 import pytest
 from fastapi import status
 
-from tests.helpers import execute_clean_data
+from tests.helpers import execute_sql
 
 
 def setup_module(module):
-    execute_clean_data("DELETE FROM users WHERE email = :email", {"email": "fulano@iggle.com"})
+    execute_sql("DELETE FROM users WHERE email = :email", {"email": "fulano@iggle.com"})
 
 
 def test_register_should_execute_with_success(http_client):
@@ -49,4 +49,4 @@ def test_register_should_not_execute_with_weak_password(http_client, password):
 
 
 def teardown_module(module):
-    execute_clean_data("DELETE FROM users WHERE email = :email", {"email": "fulano@iggle.com"})
+    execute_sql("DELETE FROM users WHERE email = :email", {"email": "fulano@iggle.com"})

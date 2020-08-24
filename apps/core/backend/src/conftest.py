@@ -1,11 +1,11 @@
 import os
+import sqlite3
 from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi import status
 from dotenv import load_dotenv
-from alembic import command
-from alembic.config import Config
 
 from main import app
 from resources.dbcontext import DbContext
@@ -16,8 +16,6 @@ load_dotenv()
 
 def pytest_sessionstart(session):
     os.environ["ENVIRONMENT"] = "testing"
-    config = Config("alembic.ini")
-    command.upgrade(config, "head")
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -42,9 +40,13 @@ def http_client() -> Generator:
 
 
 @pytest.fixture(scope="function")
-def http_client_authenticated() -> Generator:
-    with TestClient(app) as client:
-        yield client
+def jwt_token(http_client) -> str:
+    user = {"username": "alex@iggle.com", "password": "Minh@SenhaSegura123"}
+    response = http_client.post("/v1/login/", json=user)
+    assert response.status_code == status.HTTP_200_OK
+    json = response.json()
+
+    return json["access_token"]
 
 
 @pytest.fixture(scope="module")

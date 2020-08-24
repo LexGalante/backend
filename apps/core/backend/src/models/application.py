@@ -32,11 +32,16 @@ class Application(Base):
     users = relationship("ApplicationUser", lazy="select", back_populates="application")
     features = relationship("ApplicationFeature", lazy="select", back_populates="application")
 
-    def generate_name(self):
-        name = self.real_name.lower().replace(" ", "_")
-        name = re.sub(r"[^a-zA-Z0-9]", "", name)
-        name = shorten(name, width=30, placeholder="_")
-        self.name = name
+    def generate_name(self, suggestion: str = None):
+        if suggestion is None:
+            name = self.real_name.lower().replace(" ", "_")
+            name = re.sub(r"[^a-zA-Z0-9]", "", name)
+            name = shorten(name, width=30, placeholder="_")
+            self.name = name
+        else:
+            suggestion = suggestion.lower()
+            suggestion = shorten(suggestion, width=30, placeholder="_")
+            self.name = suggestion
 
     def add_user(self, user_id: int):
         user = ApplicationUser(application_id=self.id, user_id=user_id)

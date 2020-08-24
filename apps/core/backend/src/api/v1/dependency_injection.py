@@ -2,7 +2,7 @@ from typing import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose.exceptions import ExpiredSignatureError, JWSSignatureError
+from jose.exceptions import ExpiredSignatureError, JWSSignatureError, JWTError
 
 from models.user import User
 from resources.security import decode_token_jwt
@@ -27,7 +27,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), dbcontext: DbContext = Depends(get_dbcontext)) -> User:
     try:
-        email = decode_token_jwt(token)
+        token = decode_token_jwt(token)
+        email = token["sub"]
         user = UserService(dbcontext).get_by_email(email)
         if user is None:
             raise HTTPException(
@@ -42,3 +43,5 @@ async def get_current_user(token: str = Depends(oauth2_scheme), dbcontext: DbCon
     except JWSSignatureError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")

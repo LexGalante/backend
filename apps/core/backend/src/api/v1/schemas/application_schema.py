@@ -40,7 +40,7 @@ class ApplicationResponseSchema(BaseModel):
     real_name: str
     model: int
     description: str
-    details: str
+    details: Optional[str]
     active: bool
     created_at: datetime
     created_by: int
