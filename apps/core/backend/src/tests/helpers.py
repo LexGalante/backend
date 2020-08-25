@@ -35,6 +35,7 @@ def generate_users(amount_users: int = 1):
             "active": True if x % 2 == 0 else False
         })
 
+
 def clean_users(amount_users):
     sql: str = "DELETE FROM users WHERE email = :email"
     for x in range(1, amount_users):
@@ -62,8 +63,20 @@ def generate_application(name: str):
 
 def clean_application(name: str):
     sql = "DELETE FROM applications WHERE name = :name"
-    parameters = {"name": name}
-    execute_sql(sql, parameters)
+    if type(name) is list:
+        for n in name:
+            execute_sql(sql, {"name": n})
+    else:
+        execute_sql(sql, {"name": name})
+
+
+def clean_feature(name: str):
+    sql = "DELETE FROM application_features WHERE name = :name"
+    if type(name) is list:
+        for n in name:
+            execute_sql(sql, {"name": n})
+    else:
+        execute_sql(sql, {"name": name})
 
 
 def get_bigger_text():

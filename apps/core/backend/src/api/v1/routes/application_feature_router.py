@@ -16,9 +16,9 @@ router = APIRouter()
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
 def get(
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).get_by_name(name, current_user)
@@ -35,10 +35,10 @@ def get(
 
 @router.patch("/", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
 def patch(
+    schema: ApplicationFeatureRequestSchema,
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    schema: ApplicationFeatureRequestSchema = None,
-    name: str = None,
+    current_user: User = Depends(get_current_user)
 ):
     try:
         data = schema.__dict__
@@ -70,11 +70,11 @@ def patch(
     response_model=List[ApplicationFeatureResponseSchema]
 )
 def activate(
+    name: str,
+    environment_id: int,
+    feature_name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None,
-    environment_id: int = None,
-    feature_name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).activate_feature(name, environment_id, feature_name, current_user)
@@ -91,9 +91,9 @@ def activate(
 
 @router.patch("/activate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
 def activate_all(
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).activate_all_feature(name, current_user)
@@ -114,11 +114,11 @@ def activate_all(
     response_model=List[ApplicationFeatureResponseSchema]
 )
 def inactivate(
+    name: str,
+    environment_id: int,
+    feature_name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None,
-    environment_id: int = None,
-    feature_name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).inactivate_feature(name, environment_id, feature_name, current_user)
@@ -135,9 +135,9 @@ def inactivate(
 
 @router.patch("/inactivate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
 def inactivate_all(
+    name: str,
     dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    name: str = None
+    current_user: User = Depends(get_current_user)
 ):
     try:
         application = ApplicationService(dbcontext).inactivate_all_feature(name, current_user)
@@ -154,11 +154,11 @@ def inactivate_all(
 
 @router.delete("/{feature_name}", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
 def delete(
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    feature_name: str = None,
+    feature_name: str,
+    name: str,
     environment_id: Optional[int] = 0,
-    name: str = None
+    dbcontext: DbContext = Depends(get_dbcontext),
+    current_user: User = Depends(get_current_user)
 ):
     try:
         service = ApplicationService(dbcontext)

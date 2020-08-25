@@ -98,6 +98,16 @@ def test_remove_should_remove_user(http_client, jwt_token):
     assert len(users) != len(json)
 
 
+@pytest.mark.parametrize("user_id", [3, 6, 7])
+def test_remove_should_not_remove_user_because_missing_token(http_client, user_id):
+    # ARRANGE
+    response = http_client.delete("/v1/applications/netflix/users/{user_id}", headers=prepare_headers())
+    # ASSERT
+    assert response.status_code == status.HTTP_200_OK
+    json = response.json()
+    assert "Not authenticated" in json["errors"]
+
+
 def test_remove_should_not_remove_because_user_doesnt_have_permission(http_client, jwt_token):
     # ARRANGE & ACT
     response = http_client.delete("/v1/applications/botica/users/3", headers=prepare_headers(jwt_token))
