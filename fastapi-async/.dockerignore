@@ -1,0 +1,12 @@
+# vscode
+.vscode
+# env
+.env
+.env-example
+.flake8
+.gitignore
+alembic.ini
+# src
+src/migrations
+src/tests
+src/conftest.py

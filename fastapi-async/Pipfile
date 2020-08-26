@@ -1,0 +1,31 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+isort = "*"
+sqlalchemy-stubs = "*"
+flake8 = "*"
+pytest = "*"
+requests = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+autopep8 = "*"
+
+[packages]
+fastapi = "*"
+uvicorn = "*"
+python-dotenv = "*"
+sqlalchemy = "*"
+bcrypt = "*"
+psycopg2-binary = "*"
+pydantic = {extras = ["email"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
+python-multipart = "*"
+alembic = "*"
+databases = {extras = ["postgresql"], version = "*"}
+
+[requires]
+python_version = "3.7"
