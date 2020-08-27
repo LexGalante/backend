@@ -1,38 +1,55 @@
+import logging
 from typing import List
+from databases import Database
 
-from models.user import User
-from repositories.user_repository import UserRepository
-from resources.dbcontext import DbContext
-from resources.security import encrypt, validate
+from resources.security import encrypt
+from resources.database import users
 
 
-class UserService():
-    def __init__(self, dbcontext: DbContext):
-        self._dbcontext: DbContext = dbcontext
-        self._repository: UserRepository = UserRepository(dbcontext)
+class UserService:
+    def __init__(self, database: Database):
+        self._database: Database = database
+        self._logger = logging.getLogger(__name__)
 
-    def get_all(self, page: int, page_size: int) -> List[User]:
-        return self._repository.get_all(page, page_size)
+    async def get_all(self, page: int, page_size: int) -> List[dict]:
+        sql = "SELECT * FROM users OFFSET :offset LIMIT :limit"
+        parameters = {"offset": ((page - 1) * page_size), "limit": page_size}
+        users = await self._database.fetch_all(query=sql, values=parameters)
 
-    def get_by_email(self, email: str) -> User:
-        return self._repository.get_by_email(email)
+        return users
 
-    def create(self, data) -> User:
-        user = User()
-        user.email = data["email"]
-        user.password = encrypt(data["password"])
-        if "active" in data.keys():
-            user.active = data["active"]
-        else:
-            user.active = True
-        self._repository.create(user)
-        self._dbcontext.commit()
+    async def get_by_email(self, email: str) -> dict:
+        sql = "SELECT * FROM users WHERE email = :email"
+        parameters = {"email": email}
+        user = await self._database.fetch_one(sql, parameters)
 
         return user
 
-    def authenticate(self, email, password) -> User:
-        user = self._repository.get_by_email(email)
-        if user is None or not validate(password, user.password):
-            raise ValueError("Invalid username or password")
+    async def get_user_id_by_email(self, email) -> int:
+        sql = "SELECT id FROM users WHERE email = :email"
+        parameters = {"email": email}
+        return int(await self._database.fetch_val(query=sql, values=parameters))
 
-        return user
+    async def create(self, user):
+        if "active" not in user.keys():
+            user["active"] = True
+        sql = users.insert().values(
+            email=user["email"],
+            password=encrypt(user["password"]),
+            active=user["active"]
+        )
+        await self._database.execute(query=sql)
+
+    async def activate(self, email: str):
+        await self.toggle_active(email, True)
+
+    async def inactivate(self, email: str):
+        await self.toggle_active(email, False)
+
+    async def toggle_active(self, email: str, status: bool):
+        sql = users.update().where(users.c.email == email).values(active=status)
+        await self._database.execute(query=sql)
+
+    async def change_password(self, email: str, new_password: str):
+        sql = users.update().where(users.c.email == email).values(password=encrypt(new_password))
+        await self._database.execute(query=sql)

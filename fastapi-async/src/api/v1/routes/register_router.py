@@ -1,20 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-
+from databases import Database
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.exc import IntegrityError
 
 from api.v1.dependency_injection import get_dbcontext
 from api.v1.schemas.register_schema import RegisterRequestSchema
-from resources.dbcontext import DbContext
 from services.user_service import UserService
-
+from resources.custom_responses import created, bad_request
 
 router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def index(dbcontext: DbContext = Depends(get_dbcontext), schema: RegisterRequestSchema = None):
+async def index(
+    schema: RegisterRequestSchema,
+    database: Database = Depends(get_dbcontext)
+):
     try:
-        user = UserService(dbcontext).create(schema.__dict__)
-        return {"id": user.id}
+        service = UserService(database)
+        await service.create(schema.__dict__)
+
+        return created()
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{schema.email} already exists!!!")
+        return bad_request(f"{schema.email} already exists!!!")

@@ -1,233 +1,228 @@
+import re
 import logging
-
 from datetime import datetime
-
-from random import randint
 from typing import List
+from textwrap import shorten
+from random import randint
 
-from models.application import Application
-from models.user import User
-from repositories.application_repository import ApplicationRepository
-from repositories.environment_repository import EnvironmentRepository
-from resources.dbcontext import DbContext
+from databases import Database
+from databases.core import Transaction
+
+from services.user_service import UserService
+from services.environment_service import EnvironmentService
+from resources.database import (application_features, application_users,
+                                applications)
 
 
 class ApplicationService():
-    def __init__(self, dbcontext: DbContext):
-        self._dbcontext = dbcontext
-        self._repository: ApplicationRepository = ApplicationRepository(dbcontext)
-        self._environment_repository: EnvironmentRepository = EnvironmentRepository(dbcontext)
+    def __init__(self, database: Database):
+        self._database = database
+        self._user_service: UserService = UserService(database)
+        self._environment_service: EnvironmentService = EnvironmentService(database)
         self._logger = logging.getLogger(__name__)
 
-    def get_all_by_user(self, user: User) -> List[Application]:
-        return self._repository.get_all_by_user(user)
+    async def get_all_by_user(self, user: dict) -> List[dict]:
+        sql = """
+        SELECT a.*
+        FROM applications a
+        LEFT JOIN application_users au ON a.id = au.application_id
+        WHERE au.user["id"] = :user["id"]
+        """
+        parameters = {"user_id": user["id"]}
+        applications = await self._database.fetch_all(query=sql, values=parameters)
 
-    def get_by_name(self, name: str, user: User) -> Application:
-        application = self._repository.get_by_name(name, user)
+        return applications
+
+    async def get_by_name(self, name: str, user: dict) -> dict:
+        sql = """
+        SELECT a.*
+        FROM applications a
+        LEFT JOIN application_users au ON a.id = au.application_id
+        WHERE au.user["id"] = :user["id"]
+        AND a.name = :name
+        """
+        parameters = {"user_id": user["id"], "name": name}
+        application = await self._database.fetch_one(query=sql, values=parameters)
         if application is None:
             raise ValueError(f"Not found or Not permission access application {name}")
 
         return application
 
-    def create(self, data: dict, user: User) -> Application:
-        try:
-            application = Application()
-            application.real_name = data["real_name"]
-            application.model = data["model"]
-            application.description = data["description"]
-            application.details = data["details"] if "details" in data.keys() else None
-            self.generate_name(application)
-            application.created_at = datetime.now()
-            application.created_by = user.id
-            application.updated_at = datetime.now()
-            application.updated_by = user.id
-            application.activate = True
-            application.add_user(user.id)
-            self._repository.create(application)
-            self._dbcontext.commit()
-            self._logger.info(
-                f"{user.email} created new application {application.name}")
+    async def get_id_by_name(self, name: str) -> int:
+        sql = "SELECT id FROM applications WHERE name = :name"
+        parameters = {"name": name}
 
-            return application
+        return int(await self._database.fetch_val(query=sql, values=parameters))
+
+    async def create(self, application: dict, user: dict):
+        transaction: Transaction = await self._database.transaction()
+        try:
+            name = self.generate_name(application["name"])
+            sql = applications.insert().vales(
+                name=name,
+                real_name=application["real_name"],
+                model=application["model"],
+                description=application["description"],
+                details=application["details"],
+                active=application["active"],
+                created_at=datetime.now(),
+                created_by=user["id"],
+                updated_at=datetime.now(),
+                updated_by=user["id"]
+            )
+            id = await self._database.execute(sql)
+            sql = application_users.insert().values(
+                application_id=id,
+                user_id=user["id"]
+            )
+            await self._database.execute(query=sql)
+            transaction.commit()
+
+            self._logger.info(
+                user["email"] + f" created new application {application.name}")
         except Exception as e:
+            transaction.rollback()
             self._logger.error(f"Error ocurred on create new application {str(e)}")
-            self._dbcontext.rollback()
 
             raise e
 
-    def update(self, data: dict, name: str, user: User):
-        application = self.get_by_name(name, user)
-        application.real_name = data["real_name"]
-        application.model = data["model"]
-        application.description = data["description"]
-        application.details = data["details"]
-        application.updated_at = datetime.now()
-        application.updated_by = user.id
-        self._dbcontext.commit()
-
-        self._logger.info(f"{user.email} updated application {application.name}")
-
-        return application
-
-    def activate(self, name: str, user: User):
-        application = self.get_by_name(name, user)
-        application.updated_at = datetime.now()
-        application.updated_by = user.id
-        application.activate = True
-        self._dbcontext.commit()
-
-        self._logger.info(f"{user.email} activate application {application.name}")
-
-        return application
-
-    def inactivate(self, name: str, user: User):
-        application = self.get_by_name(name, user)
-        application.updated_at = datetime.now()
-        application.updated_by = user.id
-        application.activate = False
-        self._dbcontext.commit()
-
-        self._logger.info(f"{user.email} inactivate application {application.name}")
-
-        return application
-
-    def delete(self, name: str, user: User):
-        return self.inactivate(name, user)
-
-    def generate_name(self, application: Application) -> str:
-        """
-        Genarate unique name for Application
-        """
-        application.generate_name()
-        while self._repository.name_exists(application.name):
-            application.generate_name(f"{application.real_name}_{randint(1, 100)}")
-
-    def add_user(self, name: str, user_id: int, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        application.add_user(user_id)
-        application.updated_at = datetime.now()
-        application.updated_by = user.id
-        self._dbcontext.commit()
-
-        self._logger.info(
-            f"{user.email} add new user into application {application.name}")
-
-        return application
-
-    def remove_user(self, name: str, user_id: int, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        self._dbcontext.execute(
-            "DELETE FROM application_users WHERE application_id = :application_id AND user_id = :user_id",
-            {"application_id": application.id, "user_id": user_id})
-        self._dbcontext.commit()
-
-        self._logger.info(
-            f"{user.email} remove user({user_id}) on application {application.name}")
-
-        return application
-
-    def add_feature(self, name: str, data: dict, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        application.add_feature(
-            environment_id=data["environment_id"],
-            name=data["name"],
-            enable=data["enable"],
-            user=user
+    async def update(self, data: dict, name: str, user: dict):
+        sql = applications.update().where(applications.c.name == name).values(
+            real_name=data["real_name"],
+            model=data["model"],
+            description=data["description"],
+            details=data["details"],
+            updated_at=datetime.now(),
+            updated_by=user["id"]
         )
-        self._dbcontext.commit()
+        await self._database.execute(query=sql)
+        self._logger.info(user["email"] + f" updated application {name}")
+
+    async def activate(self, name: str, user: dict):
+        await self.toggle_active(name, True, user)
+
+    async def inactivate(self, name: str, user: dict):
+        await self.toggle_active(name, True, user)
+
+    async def toggle_active(self, name: str, active: bool, user):
+        sql = applications.update().where(applications.c.name == name).values(
+            updated_at=datetime.now(),
+            updated_by=user["id"],
+            active=True
+        )
+        await self._database.execute(query=sql)
+        self._logger.info(user["email"] + f" activate application {name}")
+
+    async def delete(self, name: str, user: dict):
+        await self.toggle_active(name, False, user)
+
+    async def generate_name(self, application_name: str) -> str:
+        """
+        Genarate unique name for dict
+        """
+        application_name = application_name.lower().replace(" ", "_")
+        application_name = re.sub(r"[^a-zA-Z0-9]", "", application_name)
+        application_name = shorten(application_name, width=30, placeholder="_")
+        sql = "SELECT COUNT(*) FROM applications WHERE name = :name"
+        while await self._database.fetch_val(query=sql, values={"name": application_name}) != 0:
+            application_name = f"{application_name}_{randint(1, 100)}"
+
+        return application_name
+
+    async def add_user(self, name: str, email: int, user: dict):
+        user_id = await self._user_service.get_user_id_by_email(email)
+        application_id = await self.get_id_by_name(name)
+        sql = application_users.insert().values(
+            user_id=user_id,
+            application_id=application_id
+        )
+        await self._database.execute(sql)
 
         self._logger.info(
-            f"{user.email} add new feature into application({application.name})")
+            user["email"] + f" insert new user({email}) into application({name})")
 
-        return application
+    async def remove_user(self, name: str, email: str, user: dict):
+        user_id = await self._user_service.get_user_id_by_email(email)
+        application_id = await self.get_id_by_name(name)
+        sql = application_users.delete().where(
+            application_users.c.user_id == user_id,
+            application_users.c.application_id == application_id
+        )
+        await self._database.execute(sql)
+        self._logger.info(
+            user["email"] + f" remove user({email}) on application {name}")
 
-    def add_feature_all_environments(self, name: str, data: dict, user: User) -> Application:
+    async def add_feature(self, name: str, feature: dict, user: dict):
+        feature_name = feature["name"].replace(" ", "_")
+        application_id = await self.get_id_by_name(name)
+        environments = await self._environment_service.get_all()
+        transaction = await self._database.transaction()
         try:
-            application = self.get_by_name(name, user)
-            for environment in self._environment_repository.get_all():
-                application.add_feature(
-                    environment_id=environment.id,
-                    name=data["name"],
-                    enable=data["enable"],
-                    user=user
-                )
+            sql = """ 
+            INSERT INTO application_features (application_id, environment_id, name, enable, created_at, created_by, updated_at, updated_by)
+            VALUES (:application_id, :environment_id, :name, :enable, created_at, created_by, updated_at, updated_by);
+            """
+            parameters = [{
+                "application_id": application_id,
+                "environment_id": environment["id"],
+                "name": feature_name,
+                "enable": feature["enable"],
+                "created_at": datetime.now(),
+                "created_by": user["id"],
+                "updated_at": datetime.now(),
+                "updated_by": user["id"]
+            } for environment in environments]
+            await self._database.execute_many(query=sql, values=parameters)
 
-            self._dbcontext.commit()
+            sql = applications.update().where(applications.c.name == name).value(
+                updated_at=datetime.now(), updated_by=user["id"])
+            await self._database.execute(query=sql)
+
+            transaction.commit()
 
             self._logger.info(
-                f"{user.email} add new features into application({application.name})")
-
-            return application
+                user["id"] + "insert new feature({feature_name}) into application({name})")
         except Exception as e:
-            self._dbcontext.rollback()
-            self._logger.error(f"Error occurred when {user.email} tryng to add new features {str(e)}")
-            raise
-
-    def remove_feature(self, name: str, feature_name: str, environment_id: int, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        for key, feature in enumerate(application.features):
-            if feature.name == feature_name and feature.environment_id == environment_id:
-                del application.features[key]
-        self._dbcontext.commit()
-
-        self._logger.info(
-            f"{user.email} remove feature({feature_name}) from applicarion({application.name})")
-
-        return application
-
-    def remove_feature_all_environments(self, name: str, feature_name: str, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        for key, feature in enumerate(application.features):
-            if feature.name == feature_name:
-                del application.features[key]
-        self._dbcontext.commit()
-
-        self._logger.info(
-            f"{user.email} remove features for all environments from applicarion({application.name})")
-
-        return application
-
-    def activate_feature(self, name: str, environment_id: int, feature_name: str, user: User) -> Application:
-        return self.toggle_feature(name, environment_id, feature_name, True, user)
-
-    def inactivate_feature(self, name: str, environment_id: int, feature_name: str, user: User) -> Application:
-        return self.toggle_feature(name, environment_id, feature_name, False, user)
-
-    def toggle_feature(self, name: str, env: int, feature_name: str, status: bool, user: User) -> Application:
-        application = self.get_by_name(name, user)
-        for feature in application.features:
-            if feature.name == feature_name and feature.environment_id == env:
-                feature.enable = status
-                feature.updated_at = datetime.now()
-                feature.updated_by = user.id
-        self._dbcontext.commit()
-
-        self._logger.info(
-            f"{user.email} toggle({feature_name}) for({status}) into application({application.name}) in env({env})")
-
-        return application
-
-    def activate_all_feature(self, name: str, user: User) -> Application:
-        return self.toggle_all_features(name, True, user)
-
-    def inactivate_all_feature(self, name: str, user: User) -> Application:
-        return self.toggle_all_features(name, False, user)
-
-    def toggle_all_features(self, name: str, status: bool, user: User) -> Application:
-        try:
-            application = self.get_by_name(name, user)
-            for feature in application.features:
-                feature.enable = status
-                feature.updated_at = datetime.now()
-                feature.updated_by = user.id
-            self._dbcontext.commit()
-
-            self._logger.info(
-                f"{user.email} toggle all features for({status}) into application({name})")
-
-            return application
-        except Exception as e:
-            self._dbcontext.rollback()
+            transaction.rollback()
             self._logger.error(
-                f"Error occurred when {user.email} tryng to toggle({status}) features into {name}, {str(e)}")
-            raise
+                f"Error ocurred on insert new feature({feature_name}) into application({name}): {str(e)}")
+
+            raise e
+
+    async def remove_feature(self, name: str, feature_name: str, user: dict) -> dict:
+        sql = application_features.delete().where(application_features.c.name == feature_name)
+        await self._database.execute(query=sql)
+
+        self._logger.info(
+            user["email"] + f" remove feature({feature_name}) into application ({name})")
+
+    async def activate_feature(self, name: str, environment_name: str, feature_name: str, user: dict):
+        return await self.toggle_feature(name, environment_name, feature_name, True, user)
+
+    async def inactivate_feature(self, name: str, environment_name: str, feature_name: str, user: dict):
+        return await self.toggle_feature(name, environment_name, feature_name, False, user)
+
+    async def toggle_feature(self, name: str, environment_name: str, feature_name: str, status: bool, user: dict):
+        environment_id = await self._environment_service.get_id_by_name(environment_name)
+        sql = application_features.update().where(
+            application_features.c.feature_name == feature_name,
+            application_features.c.environment_id == environment_id
+        ).values(enable=status)
+        await self._database.execute(query=sql)
+
+        self._logger.info(user["email"] + f" toggle({feature_name}) for({status}) into application({name})")
+
+    async def activate_all_feature(self, name: str, user: dict) -> dict:
+        return await self.toggle_all_features(name, True, user)
+
+    async def inactivate_all_feature(self, name: str, user: dict) -> dict:
+        return await self.toggle_all_features(name, False, user)
+
+    async def toggle_all_features(self, feature_name: str, status: bool, user: dict) -> dict:
+        sql = application_features.update().where(
+            application_features.c.feature_name == feature_name
+        ).values(enable=status)
+        await self._database.execute(query=sql)
+
+        self._logger.info(user["email"] + f" toggle({feature_name}) for({status})")
+
