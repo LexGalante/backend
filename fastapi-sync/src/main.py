@@ -15,7 +15,7 @@ logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
 # load configurations
 load_dotenv()
 # prepare application
-app = FastAPI(title="iggle api backend")
+app = FastAPI(title="Fastapi SYNC")
 # configure cors
 if API_ENABLE_CORS:
     app.add_middleware(

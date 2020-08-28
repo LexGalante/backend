@@ -8,3 +8,10 @@ class UserResponseSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserChangePasswordSchema(BaseModel):
+    new_password: str
+    confirm_password: str
+
+

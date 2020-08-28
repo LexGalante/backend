@@ -56,10 +56,8 @@ class ApplicationUserRequestSchema(BaseModel):
 
 
 class ApplicationFeatureRequestSchema(BaseModel):
-    environment_id: int
     name: str
     enable: bool
-    all: Optional[bool] = False
 
     @validator("name")
     def name_validator(cls, value):
@@ -70,7 +68,6 @@ class ApplicationFeatureRequestSchema(BaseModel):
 
 
 class ApplicationFeatureResponseSchema(BaseModel):
-    environment_id: str
     environment: str
     name: str
     enable: bool

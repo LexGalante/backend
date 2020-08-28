@@ -1,180 +1,115 @@
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, status
 
-from api.v1.dependency_injection import get_current_user, get_dbcontext
-from api.v1.schemas.application_schema import ApplicationFeatureRequestSchema, ApplicationFeatureResponseSchema
-
-from models.user import User
-from models.application import Application
-from resources.dbcontext import DbContext
+from api.v1.dependency_injection import get_current_user, get_application_service
+from api.v1.schemas.application_schema import (
+    ApplicationFeatureRequestSchema, ApplicationFeatureResponseSchema)
 from services.application_service import ApplicationService
+from resources.custom_responses import ok, bad_request
 
 router = APIRouter()
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
-def get(
+async def get(
     name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).get_by_name(name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
+        features = await service.get_application_features(name, current_user)
 
-        return features
+        return [ApplicationFeatureResponseSchema(**feature) for feature in features]
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
 
 
-@router.patch("/", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
-def patch(
+@router.patch("/", status_code=status.HTTP_200_OK)
+async def patch(
+    name: str,
     schema: ApplicationFeatureRequestSchema,
-    name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        data = schema.__dict__
-        service = ApplicationService(dbcontext)
-        application: Application = None
-        if "all" in data.keys() and data["all"]:
-            application = service.add_feature_all_environments(name, data, current_user)
-        else:
-            application = service.add_feature(name, data, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"The feature({schema.name}) already exists this environment"
-        )
+        await service.add_feature(name, schema.__dict__, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()
 
 
-@router.patch(
-    "/{feature_name}/{environment_id}/activate",
-    status_code=status.HTTP_200_OK,
-    response_model=List[ApplicationFeatureResponseSchema]
-)
-def activate(
+@router.patch("/{feature_name}/{environment}/activate", status_code=status.HTTP_200_OK)
+async def activate(
     name: str,
-    environment_id: int,
+    environment: str,
     feature_name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).activate_feature(name, environment_id, feature_name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
+        await service.activate_feature(name, environment, feature_name, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()
 
 
-@router.patch("/activate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
-def activate_all(
+@router.patch("/activate-all", status_code=status.HTTP_200_OK)
+async def activate_all(
     name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).activate_all_feature(name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
+        await service.activate_all_feature(name, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()
 
 
-@router.patch(
-    "/{feature_name}/{environment_id}/inactivate",
-    status_code=status.HTTP_200_OK,
-    response_model=List[ApplicationFeatureResponseSchema]
-)
-def inactivate(
+@router.patch("/{feature_name}/{environment}/inactivate", status_code=status.HTTP_200_OK)
+async def inactivate(
     name: str,
-    environment_id: int,
+    environment: str,
     feature_name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).inactivate_feature(name, environment_id, feature_name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
+        await service.inactivate_feature(name, environment, feature_name, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()
 
 
-@router.patch("/inactivate-all", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
-def inactivate_all(
+@router.patch("/inactivate-all", status_code=status.HTTP_200_OK)
+async def inactivate_all(
     name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).inactivate_all_feature(name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
+        await service.inactivate_all_feature(name, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()
 
 
-@router.delete("/{feature_name}", status_code=status.HTTP_200_OK, response_model=List[ApplicationFeatureResponseSchema])
-def delete(
+@router.delete("/{feature_name}", status_code=status.HTTP_200_OK)
+async def delete(
+    name: str,
     feature_name: str,
-    name: str,
-    environment_id: Optional[int] = 0,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        service = ApplicationService(dbcontext)
-        application: Application = None
-        if environment_id > 0:
-            application = service.remove_feature(name, feature_name, environment_id, current_user)
-        else:
-            application = service.remove_feature_all_environments(name, feature_name, current_user)
-        features: List[ApplicationFeatureResponseSchema] = [ApplicationFeatureResponseSchema(
-            environment_id=feature.environment_id,
-            environment=feature.environment.name,
-            name=feature.name,
-            enable=feature.enable) for feature in application.features]
-
-        return features
-    except IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        await service.remove_feature(name, feature_name, current_user)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
+    else:
+        return ok()

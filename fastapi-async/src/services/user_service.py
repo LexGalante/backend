@@ -28,7 +28,7 @@ class UserService:
     async def get_user_id_by_email(self, email) -> int:
         sql = "SELECT id FROM users WHERE email = :email"
         parameters = {"email": email}
-        return int(await self._database.fetch_val(query=sql, values=parameters))
+        return await self._database.fetch_val(query=sql, values=parameters)
 
     async def create(self, user):
         if "active" not in user.keys():
@@ -50,6 +50,10 @@ class UserService:
         sql = users.update().where(users.c.email == email).values(active=status)
         await self._database.execute(query=sql)
 
-    async def change_password(self, email: str, new_password: str):
+    async def change_password(self, email: str, new_password: str, confirm_password: str):
+        if new_password != confirm_password:
+            raise ValueError("password assword confirmation is invalid")
         sql = users.update().where(users.c.email == email).values(password=encrypt(new_password))
         await self._database.execute(query=sql)
+
+

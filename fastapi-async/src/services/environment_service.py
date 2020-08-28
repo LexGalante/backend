@@ -13,7 +13,7 @@ class EnvironmentService:
     async def get_all(self) -> List[dict]:
         return await self._database.fetch_all(query=environments.select())
 
-    async def get_id_by_name(self, name: str):
-        sql = "SELECT name FROM environments WHERE id = :id"
-        parameters = {"id": id}
-        return await self._database.fetch_val(query=sql, values=parameters)
+    async def get_by_name(self, name: str):
+        sql = "SELECT * FROM environments WHERE name = :name"
+        parameters = {"name": name}
+        return await self._database.fetch_one(query=sql, values=parameters)

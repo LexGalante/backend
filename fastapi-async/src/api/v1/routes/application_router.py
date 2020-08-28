@@ -1,110 +1,92 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.exc import IntegrityError
 
-from api.v1.dependency_injection import get_current_user, get_dbcontext
-from models.user import User
-from resources.dbcontext import DbContext
-from services.application_service import ApplicationService
+from api.v1.dependency_injection import get_current_user, get_application_service
 from api.v1.schemas.application_schema import ApplicationResponseSchema, ApplicationRequestSchema
+from services.application_service import ApplicationService
+from resources.custom_responses import ok, created, bad_request
 
 
 router = APIRouter()
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[ApplicationResponseSchema])
-def get(
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+async def get(
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
-    applications = ApplicationService(dbcontext).get_all_by_user(current_user)
+    applications = await service.get_all_by_user(current_user)
 
-    return [ApplicationResponseSchema.from_orm(application) for application in applications]
+    return [ApplicationResponseSchema(**application) for application in applications]
 
 
 @router.get("/{name}", status_code=status.HTTP_200_OK, response_model=ApplicationResponseSchema)
-def get_by_name(
+async def get_by_name(
     name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).get_by_name(name, current_user)
+        application = await service.get_by_name(name, current_user)
 
-        return ApplicationResponseSchema.from_orm(application)
+        return ApplicationResponseSchema(**application)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def post(
+async def post(
     schema: ApplicationRequestSchema,
-    dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontex).create(schema.__dict__, current_user)
+        await service.create(schema.__dict__, current_user)
 
-        return {
-            "id": application.id,
-            "name": application.name,
-            "active": application.active
-        }
+        return created()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return bad_request(str(e))
 
 
-@router.put("/{name}", status_code=status.HTTP_202_ACCEPTED)
-def put(
+@router.put("/{name}", status_code=status.HTTP_200_OK)
+async def put(
     name: str,
     schema: ApplicationRequestSchema,
-    dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontex).update(schema.__dict__, name, current_user)
+        await service.update(schema.__dict__, name, current_user)
 
-        return ApplicationResponseSchema.from_orm(application)
+        return ok()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return bad_request(str(e))
 
 
 @router.patch("/{name}/activate", status_code=status.HTTP_200_OK)
-def activate(
+async def activate(
     name: str,
-    dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontex).activate(name, current_user)
+        await service.activate(name, current_user)
 
-        return {
-            "id": application.id,
-            "name": application.name,
-            "active": application.active
-        }
+        return ok()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return bad_request(str(e))
 
 
-@router.patch("/{name}/inactive", status_code=status.HTTP_200_OK)
-def inactive(
+@router.patch("/{name}/inactivate", status_code=status.HTTP_200_OK)
+async def inactivate(
     name: str,
-    dbcontex: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontex).inactive(name, current_user)
+        await service.inactivate(name, current_user)
 
-        return {
-            "id": application.id,
-            "name": application.name,
-            "active": application.active
-        }
+        return ok()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return bad_request(str(e))

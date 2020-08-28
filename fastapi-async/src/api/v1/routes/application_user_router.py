@@ -1,68 +1,55 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.exc import IntegrityError
 
-from api.v1.dependency_injection import get_current_user, get_dbcontext
+from api.v1.dependency_injection import (get_application_service,
+                                         get_current_user)
 from api.v1.schemas.application_schema import ApplicationUserRequestSchema
-from models.user import User
-from resources.dbcontext import DbContext
+from resources.custom_responses import bad_request, ok
 from services.application_service import ApplicationService
 
 router = APIRouter()
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[str])
-def get(
+async def get(
     name: str,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).get_by_name(name, current_user)
-        users: List[str] = [str(user.user.email) for user in application.users]
+        users: List[str] = await service.get_application_users(name, current_user)
 
-        return users
+        return [user["email"] for user in users]
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
 
 
-@router.patch("/", status_code=status.HTTP_200_OK)
-def patch(
+@router.patch("/{email}", status_code=status.HTTP_200_OK)
+async def patch(
     name: str,
-    schema: ApplicationUserRequestSchema,
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user)
+    email: str,
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(dbcontext).add_user(
-            name, schema.user_id, current_user)
-        users: List[str] = [str(user.user.email) for user in application.users]
+        await service.add_user(name, email, current_user)
 
-        return users
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"The user({schema.user_id}) cannot possible to add in application {name}"
-        )
+        return ok()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_200_OK)
-def delete(
-    dbcontext: DbContext = Depends(get_dbcontext),
-    current_user: User = Depends(get_current_user),
-    user_id: int = None,
-    name: str = None
+@router.delete("/{email}", status_code=status.HTTP_200_OK)
+async def delete(
+    name: str,
+    email: str,
+    current_user: dict = Depends(get_current_user),
+    service: ApplicationService = Depends(get_application_service)
 ):
     try:
-        application = ApplicationService(
-            dbcontext).remove_user(name, user_id, current_user)
-        users: List[str] = [str(user.user.email) for user in application.users]
+        await service.remove_user(name, email, current_user)
 
-        return users
-    except IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return ok()
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail=str(e))
+        return bad_request(str(e))

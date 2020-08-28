@@ -5,7 +5,7 @@ from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer,
 
 from .config import CONNECTION_STRING, MAX_CONNECTIONS, MIN_CONNECTIONS
 
-database: Database = Database(CONNECTION_STRING, min_size=MIN_CONNECTIONS, max_size=MAX_CONNECTIONS)
+database: Database = Database(CONNECTION_STRING, min_size=int(MIN_CONNECTIONS), max_size=int(MAX_CONNECTIONS))
 metadata = MetaData()
 
 
@@ -63,6 +63,7 @@ application_users = Table(
 
 application_features = Table(
     "application_features",
+    metadata,
     Column("id", Integer, primary_key=True, index=True),
     Column("application_id", Integer, ForeignKey("applications.id")),
     Column("environment_id", Integer, ForeignKey("environments.id")),

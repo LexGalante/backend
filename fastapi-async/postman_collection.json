@@ -1,0 +1,626 @@
+{
+	"info": {
+		"_postman_id": "f03c8bae-c1ec-4dda-a7b2-56a1bd0fd6e4",
+		"name": "FASTAPI_ASYNC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "38de804e-cc1c-4519-93ef-b5625cdbd1f7",
+						"exec": [
+							"var token = pm.response.json()",
+							"pm.environment.set(\"AUTH_TOKEN\", token.access_token)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"alex@iggle.com.br\",\n    \"password\": \"Minh@SenhaSegura123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}/login",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/register",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"ninox@iggle.com\",\n  \"password\": \"Ninox123!\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}/register",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/paginate/{page}/{page_size}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/users/paginate/1/10",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"users",
+						"paginate",
+						"1",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/users/{email}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/users/ninox@iggle.com",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"users",
+						"ninox@iggle.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"real_name\": \"Totvs\",\n  \"model\": 3,\n  \"description\": \"A gambiarra milionaria\",\n  \"details\": \"https://totvs.com.br\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}/applications",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"real_name\": \"TOTVS\",\n  \"model\": 3,\n  \"description\": \"Software de ponto de venda\",\n  \"details\": \"https://totvs.com.br\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}/applications/totvs",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"totvs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/activate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/totvs/activate",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"totvs",
+						"activate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/inactivate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/totvs/inactivate",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"totvs",
+						"inactivate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/users",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/users/{email}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/users/ninox@iggle.com",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"users",
+						"ninox@iggle.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/users/{email}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/users/ninox@iggle.com",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"users",
+						"ninox@iggle.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/features",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"show animes\",\n  \"enable\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/netflix/features",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/features/{feature_name}/{environment_name}/activate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features/notification/dev/activate",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features",
+						"notification",
+						"dev",
+						"activate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/features/{feature_name}/{environment_name}/inactivate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features/notification/dev/inactivate",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features",
+						"notification",
+						"dev",
+						"inactivate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/features/inactivate-all",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features/inactivate-all",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features",
+						"inactivate-all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/applications/{name}/features/activate-all",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AUTH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}/applications/netflix/features/activate-all",
+					"host": [
+						"{{URL_BASE}}"
+					],
+					"path": [
+						"applications",
+						"netflix",
+						"features",
+						"activate-all"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{AUTH_TOKEN}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"id": "4b0d0eb4-d8e1-412a-9385-75f87eb4774c",
+			"key": "URL_BASE",
+			"value": "http://localhost:5000/v1/"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
