@@ -25,7 +25,7 @@ namespace src.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public int CreatedBy { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        public string UpdatedBy { get; set; }
+        public int UpdatedBy { get; set; }
 
         public IList<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
         public IList<ApplicationFeature> Features { get; set; } = new List<ApplicationFeature>();
