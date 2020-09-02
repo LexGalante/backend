@@ -73,7 +73,7 @@ namespace src.Controllers.v1
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PutAsync([FromRoute] string name, [FromBody] Application application)
         {
-            await _service.UpdateAsync(name, application, this.GetCurrentUserEmail());
+            await _service.UpdateAsync(name, application, this.GetCurrentUserEmail(_httpContextAcessor);
 
             return Ok();
         }
