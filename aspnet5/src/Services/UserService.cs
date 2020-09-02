@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using src.Exceptions;
 
 namespace src.Services
 {
@@ -55,8 +56,11 @@ namespace src.Services
             return active;
         }
 
-        public async Task<User> ChangePasswordAsync(string email, string newPassword)
+        public async Task<User> ChangePasswordAsync(string email, string newPassword, string confirmPassword)
         {
+            if (newPassword != confirmPassword)
+                throw new FailConfirmPasswordException();
+
             var user = await GetByEmailAsync(email);
             user.Password = EncryptPassword(newPassword);
 

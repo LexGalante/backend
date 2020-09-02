@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using src.Resources;
 using Microsoft.EntityFrameworkCore;
-
+using src.Services;
 
 namespace src
 {
@@ -40,6 +40,15 @@ namespace src
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
             });
+            // http context accessor
+            services.AddHttpContextAccessor();
+            // configurations
+            services.Configure<AuthenticationConfiguration>(Configuration.GetSection("Authentication"));
+            // business services
+            services.AddScoped<UserService>();
+            services.AddScoped<EnvironmentService>();
+            services.AddScoped<AuthService>();
+            services.AddScoped<ApplicationService>();
             // database
             var connectionString = Configuration.GetConnectionString("PostgresConnection");
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
