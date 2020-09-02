@@ -67,7 +67,7 @@ namespace src.Controllers.v1
 
         [HttpPost]
         [Route("/{name}")]
-        [ProducesResponseType((int)HttpStatusCode.Ok)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
