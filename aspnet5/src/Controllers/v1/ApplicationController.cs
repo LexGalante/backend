@@ -77,6 +77,71 @@ namespace src.Controllers.v1
 
             return Ok();
         }
+
+        [HttpPatch]
+        [Route("/{name}/activate")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> ActivateAsync([FromRoute] string name)
+        {
+            await _service.ActivateAsync(name, this.GetCurrentUserEmail(_httpContextAcessor));
+
+            return Ok();
+        }
+
+        [HttpPatch]
+        [Route("/{name}/inactivate")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> InactivateAsync([FromRoute] string name)
+        {
+            await _service.InactivateAsync(name, this.GetCurrentUserEmail(_httpContextAcessor));
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("/{name}/users")]
+        [ProducesResponseType(typeof(List<ApplicationUser>),(int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetUsersAsync([FromRoute] string name)
+        {
+            var application = await _service.GetByNameAsync(name, this.GetCurrentUserEmail(_httpContextAcessor));
+
+            return Ok(application.Users);
+        }
+
+        [HttpPost]
+        [Route("/{name}/users/{user}")]
+        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> PostUserAsync([FromRoute] string name, [FromRoute] string user)
+        {
+            await _service.AddUserAsync(name, user, this.GetCurrentUserEmail(_httpContextAcessor));
+
+            return Created($"/api/v1/application/{name}/users", null);
+        }
+
+        [HttpDelete]
+        [Route("/{name}/users/{user}")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> DeleteUserAsync([FromRoute] string name, [FromRoute] string user)
+        {
+            await _service.RemoveUserAsync(name, user, this.GetCurrentUserEmail(_httpContextAcessor));
+
+            return Ok();
+        }
     }
 
 }

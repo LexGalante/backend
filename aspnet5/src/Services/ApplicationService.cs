@@ -175,7 +175,7 @@ namespace src.Services
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> AddFeature(string name, string environment_name, string feature_name, bool enable, string author)
+        public async Task<int> AddFeatureAsync(string name, string environment_name, string feature_name, bool enable, string author)
         {
             var currentUser = await _userService.GetByEmailAsync(author);
             var application = await GetByNameAsync(name, currentUser);
@@ -200,7 +200,7 @@ namespace src.Services
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> RemoveFeature(string name, string feature_name, string author)
+        public async Task<int> RemoveFeatureAsync(string name, string feature_name, string author)
         {
             var currentUser = await _userService.GetByEmailAsync(author);
             var application = await GetByNameAsync(name, currentUser);
