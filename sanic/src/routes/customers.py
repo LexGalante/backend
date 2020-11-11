@@ -1,34 +1,38 @@
 from sanic.request import Request
-from sanic.response import json
+from sanic.response import empty, json
 from sanic.views import HTTPMethodView
+from sanic_jwt.decorators import inject_user, protected
+from src.models.customer import Customer
+from src.models.user import User
 
 
 class CustomerRouter(HTTPMethodView):
-    async def get(self, request: Request):
-        pool = request.app.config['pool']
-        async with pool.acquire() as connection:
-            customers = await connection.fetch("SELECT * FROM customers")
+    decorators = [protected(), inject_user()]
 
-            return json(customers)
+    async def get(self, request: Request, user: User):
+        customers = await Customer.all()
 
-    async def post(self, request: Request):
-        pool = request.app.config['pool']
-        async with pool.acquire() as connection:
-            name = request.json.get('name')
-            sql = "INSERT INTO customert(name) VALUES($1)"
-            await connection.execute(sql, name)
+        return json([customer.dict() for customer in customers])
 
-    async def put(self, request: Request):
-        pool = request.app.config['pool']
-        async with pool.acquire() as connection:
-            id = request.args.get('id', None)
-            name = request.json.get('name')
-            sql = "UPDATE customers SET name = $1 WHERE id = $2"
-            await connection.execute(sql, name, id)
+    async def post(self, request: Request, user: User):
+        customer = Customer(**request.json)
+        await customer.save()
 
-    async def delete(self, request: Request):
-        pool = request.app.config['pool']
-        async with pool.acquire() as connection:
-            id = request.args.get('id', None)
-            sql = "DELETE FROM customers id = $2"
-            await connection.execute(sql, id)
+        return json(customer.dict(), status=201)
+
+    async def put(self, request: Request, user: User):
+        customer = await Customer.filter(id=request.args.get('id', None)).first()
+        if customer is None:
+            return empty(status=404)
+        customer.name = request.json.get('name', customer.name)
+        await customer.save()
+
+        return json(customer.dict())
+
+    async def delete(self, request: Request, user: User):
+        customer = await Customer.filter(id=request.args.get('id', None)).first()
+        if customer is None:
+            return empty(status=404)
+        await customer.delete()
+
+        return empty()
