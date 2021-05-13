@@ -17,7 +17,7 @@ mccabe==0.6.1
 multidict==5.0.0
 pycodestyle==2.6.0
 pycparser==2.20
-pydantic==1.7.2
+pydantic==1.7.4
 pyflakes==2.2.0
 PyJWT==1.7.1
 PyPika==0.44.0
