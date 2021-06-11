@@ -31,4 +31,4 @@ tortoise-orm==0.16.17
 typing-extensions==3.7.4.3
 ujson==4.0.1
 uvloop==0.14.0
-websockets==8.1
+websockets==9.1
