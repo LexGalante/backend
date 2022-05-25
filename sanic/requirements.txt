@@ -19,7 +19,7 @@ pycodestyle==2.6.0
 pycparser==2.20
 pydantic==1.7.2
 pyflakes==2.2.0
-PyJWT==1.7.1
+PyJWT==2.4.0
 PyPika==0.44.0
 python-dotenv==0.15.0
 rfc3986==1.4.0
