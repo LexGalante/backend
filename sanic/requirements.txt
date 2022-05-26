@@ -29,6 +29,6 @@ six==1.15.0
 sniffio==1.2.0
 tortoise-orm==0.16.17
 typing-extensions==3.7.4.3
-ujson==4.0.1
+ujson==5.2.0
 uvloop==0.14.0
 websockets==8.1
