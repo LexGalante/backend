@@ -23,7 +23,7 @@ PyJWT==1.7.1
 PyPika==0.44.0
 python-dotenv==0.15.0
 rfc3986==1.4.0
-sanic==20.9.1
+sanic==20.12.7
 sanic-jwt==1.5.0
 six==1.15.0
 sniffio==1.2.0
